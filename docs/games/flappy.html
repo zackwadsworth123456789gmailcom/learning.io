@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Flappy Bird</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body {
+      background: #0284c7;
+      color: #fff;
+      font-family: system-ui, -apple-system, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+    #wrap {
+      position: relative;
+      width: 100%;
+      max-width: 360px;
+      height: 560px;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 20px 30px rgba(0,0,0,0.4);
+      background: #38bdf8;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+    .score-banner {
+      position: absolute;
+      top: 24px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 42px;
+      font-weight: 900;
+      text-shadow: 0 3px 6px rgba(0,0,0,0.5);
+      pointer-events: none;
+      z-index: 5;
+    }
+    .modal {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(4px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      z-index: 10;
+      text-align: center;
+    }
+    .btn {
+      background: #f59e0b;
+      color: #78350f;
+      font-weight: 800;
+      padding: 12px 32px;
+      border-radius: 9999px;
+      border: none;
+      font-size: 18px;
+      cursor: pointer;
+      margin-top: 20px;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+      transition: transform 0.15s;
+    }
+    .btn:hover { transform: scale(1.05); }
+    .hint {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #cbd5e1;
+    }
+  </style>
+</head>
+<body>
+  <div id="wrap">
+    <div class="score-banner" id="score-display">0</div>
+    <canvas id="canvas" width="360" height="560"></canvas>
+    <div class="modal" id="modal">
+      <h1 id="modal-title" style="font-size: 32px; font-weight: 900; color: #fde047;">Flappy Bird</h1>
+      <p id="modal-desc" style="color: #e2e8f0; margin-top: 8px;">Tap, Click, or Press Space to Flap!</p>
+      <div id="high-score-box" style="margin-top: 12px; font-size: 16px; font-weight: 700; color: #bae6fd;">High Score: <span id="best-score">0</span></div>
+      <button class="btn" id="play-btn">PLAY</button>
+    </div>
+  </div>
+  <div class="hint">Click / Tap or press Spacebar to jump</div>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const scoreDisplay = document.getElementById('score-display');
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalDesc = document.getElementById('modal-desc');
+    const playBtn = document.getElementById('play-btn');
+    const bestScoreEl = document.getElementById('best-score');
+
+    let bestScore = localStorage.getItem('flappy_best') || 0;
+    bestScoreEl.textContent = bestScore;
+
+    // Web Audio Sound
+    let audioCtx = null;
+    function flapSound() {
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(700, audioCtx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.08);
+      } catch(e) {}
+    }
+
+    function pointSound() {
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(780, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1040, audioCtx.currentTime + 0.12);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.12);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.12);
+      } catch(e) {}
+    }
+
+    let bird = { x: 70, y: 250, vy: 0, radius: 14, rot: 0 };
+    let pipes = [];
+    let clouds = [
+      { x: 40, y: 80, s: 40 },
+      { x: 180, y: 140, s: 55 },
+      { x: 290, y: 60, s: 45 }
+    ];
+    let score = 0;
+    let state = 'IDLE'; // IDLE, PLAYING, GAMEOVER
+    let frame = 0;
+    const GRAVITY = 0.35;
+    const JUMP = -6.8;
+    const GAP = 125;
+    const PIPE_SPEED = 2.2;
+
+    function reset() {
+      bird = { x: 70, y: 250, vy: 0, radius: 14, rot: 0 };
+      pipes = [];
+      score = 0;
+      frame = 0;
+      scoreDisplay.textContent = '0';
+      state = 'PLAYING';
+      modal.style.display = 'none';
+      flap();
+    }
+
+    function flap() {
+      if (state !== 'PLAYING') return;
+      bird.vy = JUMP;
+      flapSound();
+    }
+
+    function gameOver() {
+      state = 'GAMEOVER';
+      if (score > bestScore) {
+        bestScore = score;
+        localStorage.setItem('flappy_best', bestScore);
+        bestScoreEl.textContent = bestScore;
+      }
+      modalTitle.textContent = 'Game Over';
+      modalDesc.textContent = `Score: ${score} | Best: ${bestScore}`;
+      playBtn.textContent = 'Play Again';
+      modal.style.display = 'flex';
+    }
+
+    function update() {
+      // Move clouds
+      clouds.forEach(c => {
+        c.x -= 0.5;
+        if (c.x < -c.s * 2) c.x = canvas.width + c.s;
+      });
+
+      if (state === 'PLAYING') {
+        frame++;
+        bird.vy += GRAVITY;
+        bird.y += bird.vy;
+        bird.rot = Math.min(Math.PI / 4, Math.max(-Math.PI / 4, (bird.vy / 10)));
+
+        // Spawn pipes
+        if (frame % 95 === 0) {
+          const topHeight = Math.floor(Math.random() * (canvas.height - GAP - 180)) + 60;
+          pipes.push({
+            x: canvas.width,
+            top: topHeight,
+            bottom: canvas.height - topHeight - GAP,
+            passed: false
+          });
+        }
+
+        // Update pipes
+        for (let i = pipes.length - 1; i >= 0; i--) {
+          const p = pipes[i];
+          p.x -= PIPE_SPEED;
+
+          // Check score
+          if (!p.passed && p.x + 50 < bird.x) {
+            p.passed = true;
+            score++;
+            scoreDisplay.textContent = score;
+            pointSound();
+          }
+
+          // Collision detection
+          if (bird.x + bird.radius > p.x && bird.x - bird.radius < p.x + 52) {
+            if (bird.y - bird.radius < p.top || bird.y + bird.radius > canvas.height - p.bottom) {
+              gameOver();
+            }
+          }
+
+          if (p.x < -60) pipes.splice(i, 1);
+        }
+
+        // Ground / ceiling collision
+        if (bird.y + bird.radius >= canvas.height - 40 || bird.y - bird.radius <= 0) {
+          gameOver();
+        }
+      }
+
+      draw();
+      requestAnimationFrame(update);
+    }
+
+    function draw() {
+      // Sky
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      skyGrad.addColorStop(0, '#38bdf8');
+      skyGrad.addColorStop(1, '#7dd3fc');
+      ctx.fillStyle = skyGrad;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Clouds
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+      clouds.forEach(c => {
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, c.s * 0.4, 0, Math.PI * 2);
+        ctx.arc(c.x + c.s * 0.3, c.y - c.s * 0.1, c.s * 0.45, 0, Math.PI * 2);
+        ctx.arc(c.x + c.s * 0.6, c.y, c.s * 0.35, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // Pipes
+      pipes.forEach(p => {
+        // Top pipe
+        ctx.fillStyle = '#22c55e';
+        ctx.fillRect(p.x, 0, 52, p.top);
+        ctx.fillStyle = '#15803d';
+        ctx.fillRect(p.x - 3, p.top - 20, 58, 20);
+
+        // Bottom pipe
+        ctx.fillStyle = '#22c55e';
+        ctx.fillRect(p.x, canvas.height - p.bottom, 52, p.bottom);
+        ctx.fillStyle = '#15803d';
+        ctx.fillRect(p.x - 3, canvas.height - p.bottom, 58, 20);
+      });
+
+      // Ground
+      ctx.fillStyle = '#eab308';
+      ctx.fillRect(0, canvas.height - 40, canvas.width, 40);
+      ctx.fillStyle = '#16a34a';
+      ctx.fillRect(0, canvas.height - 40, canvas.width, 10);
+
+      // Bird
+      ctx.save();
+      ctx.translate(bird.x, bird.y);
+      ctx.rotate(bird.rot);
+
+      // Body
+      ctx.fillStyle = '#f59e0b';
+      ctx.beginPath();
+      ctx.arc(0, 0, bird.radius, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Wing
+      ctx.fillStyle = '#fbbf24';
+      ctx.beginPath();
+      ctx.ellipse(-4, 2, 7, 5, -0.2, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Eye
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(6, -4, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath();
+      ctx.arc(7, -4, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Beak
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath();
+      ctx.moveTo(11, -1);
+      ctx.lineTo(19, 2);
+      ctx.lineTo(11, 6);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    playBtn.onclick = reset;
+
+    window.addEventListener('keydown', e => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        if (state === 'PLAYING') flap();
+        else reset();
+      }
+    });
+
+    canvas.addEventListener('pointerdown', e => {
+      e.preventDefault();
+      if (state === 'PLAYING') flap();
+    });
+
+    update();
+  </script>
+</body>
+</html>
