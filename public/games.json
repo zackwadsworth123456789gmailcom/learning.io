@@ -1,0 +1,191 @@
+[
+  {
+    "id": "snake",
+    "title": "Retro Snake",
+    "category": "Arcade",
+    "description": "The timeless retro arcade classic. Slither through the grid, eat the apples to grow, and beat your personal high score!",
+    "iframe": {
+      "src": "/games/snake.html",
+      "title": "Retro Snake Arcade Game",
+      "width": "100%",
+      "height": "100%",
+      "frameBorder": "0",
+      "allow": "autoplay; fullscreen; gamepad",
+      "sandbox": "allow-scripts allow-same-origin allow-pointer-lock"
+    },
+    "themeColor": "#10b981",
+    "icon": "Gamepad2",
+    "controls": "Arrow keys or WASD to move",
+    "featured": true,
+    "rating": 4.9,
+    "plays": 28400
+  },
+  {
+    "id": "2048",
+    "title": "2048 Classic",
+    "category": "Puzzle",
+    "description": "Slide numbered tiles on a 4x4 grid. When two tiles with the same number touch, they merge into one! Can you reach 2048?",
+    "iframe": {
+      "src": "/games/2048.html",
+      "title": "2048 Puzzle Game",
+      "width": "100%",
+      "height": "100%",
+      "frameBorder": "0",
+      "allow": "autoplay; fullscreen",
+      "sandbox": "allow-scripts allow-same-origin"
+    },
+    "themeColor": "#0284c7",
+    "icon": "Grid",
+    "controls": "Arrow keys, WASD, or swipe to slide",
+    "featured": true,
+    "rating": 4.8,
+    "plays": 39120
+  },
+  {
+    "id": "flappy",
+    "title": "Flappy Pixel",
+    "category": "Arcade",
+    "description": "Navigate a little bird through endless oncoming green pipes. Timing and gentle taps are everything in this addictive classic.",
+    "iframe": {
+      "src": "/games/flappy.html",
+      "title": "Flappy Bird Game",
+      "width": "100%",
+      "height": "100%",
+      "frameBorder": "0",
+      "allow": "autoplay; fullscreen",
+      "sandbox": "allow-scripts allow-same-origin"
+    },
+    "themeColor": "#f59e0b",
+    "icon": "Flame",
+    "controls": "Spacebar, Click, or Tap to flap",
+    "featured": true,
+    "rating": 4.7,
+    "plays": 44300
+  },
+  {
+    "id": "breakout",
+    "title": "Brick Breaker",
+    "category": "Action",
+    "description": "Classic arcade breakout action. Control your paddle, angle your ball bounces, and shatter all colored brick formations.",
+    "iframe": {
+      "src": "/games/breakout.html",
+      "title": "Brick Breaker Arcade Game",
+      "width": "100%",
+      "height": "100%",
+      "frameBorder": "0",
+      "allow": "autoplay; fullscreen",
+      "sandbox": "allow-scripts allow-same-origin"
+    },
+    "themeColor": "#f43f5e",
+    "icon": "Sparkles",
+    "controls": "Mouse, Arrow keys, or Touch to slide paddle",
+    "featured": false,
+    "rating": 4.6,
+    "plays": 19800
+  },
+  {
+    "id": "space-invaders",
+    "title": "Space Defender",
+    "category": "Action",
+    "description": "Defend humanity against waves of alien invaders! Dodge incoming enemy lasers and retaliate with your ship's plasma cannon.",
+    "iframe": {
+      "src": "/games/space-invaders.html",
+      "title": "Space Defender Arcade Game",
+      "width": "100%",
+      "height": "100%",
+      "frameBorder": "0",
+      "allow": "autoplay; fullscreen",
+      "sandbox": "allow-scripts allow-same-origin"
+    },
+    "themeColor": "#8b5cf6",
+    "icon": "Rocket",
+    "controls": "Left/Right keys to steer, Space to shoot",
+    "featured": true,
+    "rating": 4.9,
+    "plays": 22100
+  },
+  {
+    "id": "tetris",
+    "title": "Tetris Blocks",
+    "category": "Puzzle",
+    "description": "The world's favorite block puzzle game. Rotate and fit descending tetrominoes into complete horizontal lines to score points.",
+    "iframe": {
+      "src": "/games/tetris.html",
+      "title": "Tetris Block Puzzle",
+      "width": "100%",
+      "height": "100%",
+      "frameBorder": "0",
+      "allow": "autoplay; fullscreen",
+      "sandbox": "allow-scripts allow-same-origin"
+    },
+    "themeColor": "#06b6d4",
+    "icon": "Layers",
+    "controls": "Up to rotate, Left/Right to move, Down to soft drop, Space to hard drop",
+    "featured": true,
+    "rating": 4.9,
+    "plays": 51200
+  },
+  {
+    "id": "pong",
+    "title": "Classic Pong",
+    "category": "Sports",
+    "description": "The legendary 1972 table tennis video game. Play in solo mode against a dynamic CPU opponent or go head-to-head in 2-player mode.",
+    "iframe": {
+      "src": "/games/pong.html",
+      "title": "Classic Pong Table Tennis",
+      "width": "100%",
+      "height": "100%",
+      "frameBorder": "0",
+      "allow": "autoplay; fullscreen",
+      "sandbox": "allow-scripts allow-same-origin"
+    },
+    "themeColor": "#38bdf8",
+    "icon": "Trophy",
+    "controls": "P1: W/S or Mouse | P2: Up/Down Arrow keys",
+    "featured": false,
+    "rating": 4.5,
+    "plays": 16400
+  },
+  {
+    "id": "runner",
+    "title": "Dino Pixel Dash",
+    "category": "Arcade",
+    "description": "Endless prehistoric desert sprinting. Leap over prickly cacti and duck beneath low-flying pterodactyls as speed accelerates.",
+    "iframe": {
+      "src": "/games/runner.html",
+      "title": "Dino Endless Runner",
+      "width": "100%",
+      "height": "100%",
+      "frameBorder": "0",
+      "allow": "autoplay; fullscreen",
+      "sandbox": "allow-scripts allow-same-origin"
+    },
+    "themeColor": "#3b82f6",
+    "icon": "Zap",
+    "controls": "Space or Up Arrow to jump, Down Arrow to duck",
+    "featured": false,
+    "rating": 4.7,
+    "plays": 31050
+  },
+  {
+    "id": "tictactoe",
+    "title": "Tic Tac Toe",
+    "category": "Puzzle",
+    "description": "Quick tactical fun on a 3x3 grid. Play solo against the computer or challenge a friend in local pass-and-play mode.",
+    "iframe": {
+      "src": "/games/tictactoe.html",
+      "title": "Tic Tac Toe Grid",
+      "width": "100%",
+      "height": "100%",
+      "frameBorder": "0",
+      "allow": "autoplay; fullscreen",
+      "sandbox": "allow-scripts allow-same-origin"
+    },
+    "themeColor": "#ec4899",
+    "icon": "Dices",
+    "controls": "Click or tap any grid cell to place your symbol",
+    "featured": false,
+    "rating": 4.4,
+    "plays": 12800
+  }
+]
