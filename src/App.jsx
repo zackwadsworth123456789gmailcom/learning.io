@@ -8,6 +8,7 @@ import { AddGameModal } from './components/AddGameModal.jsx';
 import { JsonViewerModal } from './components/JsonViewerModal.jsx';
 import { JsTryItEditorModal } from './components/JsTryItEditorModal.jsx';
 import { AiSearchModal } from './components/AiSearchModal.jsx';
+import { GoogleHubModal } from './components/GoogleHubModal.jsx';
 import { AmongUsWalker } from './components/AmongUsWalker.jsx';
 import { PanicOverlay } from './components/PanicOverlay.jsx';
 import {
@@ -37,8 +38,35 @@ export default function App() {
   const [isJsonModalOpen, setIsJsonModalOpen] = useState(false);
   const [isTryItModalOpen, setIsTryItModalOpen] = useState(false);
   const [isAiSearchModalOpen, setIsAiSearchModalOpen] = useState(false);
+  const [isGoogleHubOpen, setIsGoogleHubOpen] = useState(false);
   const [isAmongUsActive, setIsAmongUsActive] = useState(false);
   const [isPanicActive, setIsPanicActive] = useState(false);
+
+  // Restore persistent tab cloak if configured
+  useEffect(() => {
+    try {
+      const savedCloak = localStorage.getItem('unblocked_tab_cloak');
+      let link = document.querySelector("link[rel~='icon']");
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.getElementsByTagName('head')[0].appendChild(link);
+      }
+      if (savedCloak === 'google') {
+        document.title = 'Google';
+        link.href = 'https://www.google.com/favicon.ico';
+      } else if (savedCloak === 'classroom') {
+        document.title = 'Classes';
+        link.href = 'https://ssl.gstatic.com/classroom/favicon.png';
+      } else if (savedCloak === 'docs') {
+        document.title = 'World History Notes - Google Docs';
+        link.href = 'https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico';
+      } else if (savedCloak === 'drive') {
+        document.title = 'My Drive - Google Drive';
+        link.href = 'https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_32dp.png';
+      }
+    } catch {}
+  }, []);
 
   // Load from games.json on mount
   useEffect(() => {
@@ -153,6 +181,7 @@ export default function App() {
         onOpenJsonModal={() => setIsJsonModalOpen(true)}
         onOpenTryItModal={() => setIsTryItModalOpen(true)}
         onOpenAiSearchModal={() => setIsAiSearchModalOpen(true)}
+        onOpenGoogleHub={() => setIsGoogleHubOpen(true)}
         onToggleAmongUs={() => setIsAmongUsActive((prev) => !prev)}
         isAmongUsActive={isAmongUsActive}
         onTriggerPanic={() => setIsPanicActive(true)}
@@ -219,6 +248,28 @@ export default function App() {
               Discovery & Tools
             </h3>
             <div className="space-y-1.5">
+              <button
+                id="sidebar-google-btn"
+                onClick={() => setIsGoogleHubOpen(true)}
+                className="w-full flex items-center justify-between rounded bg-zinc-900 border border-zinc-800 hover:border-[#4285F4]/60 hover:bg-zinc-850 p-2 text-xs transition-colors cursor-pointer group"
+                title="Google Search, Easter Eggs, Tab Cloak & Workspace"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="font-black text-xs select-none tracking-tight">
+                    <span className="text-[#4285F4]">G</span>
+                    <span className="text-[#EA4335]">o</span>
+                    <span className="text-[#FBBC05]">o</span>
+                    <span className="text-[#4285F4]">g</span>
+                    <span className="text-[#34A853]">l</span>
+                    <span className="text-[#EA4335]">e</span>
+                  </span>
+                  <span className="text-[11px] font-mono text-zinc-200 group-hover:text-white">Google Hub</span>
+                </div>
+                <span className="text-[9px] font-mono bg-blue-500/20 text-blue-300 px-1 py-0.5 rounded font-bold">
+                  Hub »
+                </span>
+              </button>
+
               <button
                 id="sidebar-ai-search-btn"
                 onClick={() => setIsAiSearchModalOpen(true)}
@@ -426,6 +477,17 @@ export default function App() {
         }}
       />
 
+      {/* Google Hub Modal */}
+      <GoogleHubModal
+        isOpen={isGoogleHubOpen}
+        onClose={() => setIsGoogleHubOpen(false)}
+        onLaunchGame={(gameId) => {
+          const found = games.find((g) => g.id === gameId);
+          if (found) setActiveGame(found);
+        }}
+        onTriggerPanic={() => setIsPanicActive(true)}
+      />
+
       {/* Moving Among Us Walker at the bottom of the screen */}
       <AmongUsWalker
         isActive={isAmongUsActive}
@@ -441,6 +503,19 @@ export default function App() {
         </div>
 
         <div className="flex items-center gap-4">
+          <button
+            id="footer-google-hub-btn"
+            onClick={() => setIsGoogleHubOpen(true)}
+            className="text-zinc-400 hover:text-white transition-colors font-mono font-bold cursor-pointer flex items-center gap-1"
+            title="Open Google Search, Easter Eggs & Tab Cloak"
+          >
+            <span className="text-[#4285F4]">G</span>
+            <span className="text-[#EA4335]">o</span>
+            <span className="text-[#FBBC05]">o</span>
+            <span className="text-[#4285F4]">g</span>
+            <span className="text-[#34A853]">l</span>
+            <span className="text-[#EA4335]">e</span>
+          </button>
           <button
             id="footer-amongus-btn"
             onClick={() => setIsAmongUsActive((prev) => !prev)}

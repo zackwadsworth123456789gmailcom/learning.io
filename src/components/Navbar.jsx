@@ -8,6 +8,7 @@ export const Navbar = ({
   onOpenJsonModal,
   onOpenTryItModal,
   onOpenAiSearchModal,
+  onOpenGoogleHub,
   onToggleAmongUs,
   isAmongUsActive,
   onTriggerPanic,
@@ -104,6 +105,23 @@ export const Navbar = ({
           >
             <Code2 className="h-3.5 w-3.5 text-emerald-400" />
             <span className="text-[11px] font-mono">JS TryIt</span>
+          </button>
+
+          {/* Google Feature Tab */}
+          <button
+            id="open-google-hub-btn"
+            onClick={onOpenGoogleHub}
+            className="inline-flex items-center gap-1.5 rounded bg-zinc-800 hover:bg-zinc-750 border border-zinc-700 hover:border-zinc-600 px-2.5 py-1 text-xs font-bold transition-all shadow-xs cursor-pointer group"
+            title="Open Google Search, Easter Eggs, Tab Cloak & Workspace"
+          >
+            <span className="font-extrabold text-xs select-none tracking-tight">
+              <span className="text-[#4285F4]">G</span>
+              <span className="text-[#EA4335]">o</span>
+              <span className="text-[#FBBC05]">o</span>
+              <span className="text-[#4285F4]">g</span>
+              <span className="text-[#34A853]">l</span>
+              <span className="text-[#EA4335]">e</span>
+            </span>
           </button>
 
           <button

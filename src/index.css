@@ -1,1 +1,14 @@
 @import "tailwindcss";
+
+@keyframes google-barrel-roll-anim {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.google-barrel-roll {
+  animation: google-barrel-roll-anim 1.8s cubic-bezier(0.4, 0.0, 0.2, 1);
+}

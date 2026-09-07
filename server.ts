@@ -36,6 +36,28 @@ async function startServer() {
     });
   });
 
+  // Google Autocomplete Suggestions Endpoint
+  app.get('/api/google/suggest', async (req, res) => {
+    const q = String(req.query.q || '').trim();
+    if (!q) {
+      return res.json({ suggestions: [] });
+    }
+    try {
+      const resp = await fetch(
+        `https://suggestqueries.google.com/complete/search?client=chrome&q=${encodeURIComponent(q)}`
+      );
+      if (resp.ok) {
+        const data = (await resp.json()) as any;
+        if (Array.isArray(data) && Array.isArray(data[1])) {
+          return res.json({ suggestions: data[1].slice(0, 8) });
+        }
+      }
+    } catch (err) {
+      // Fallback
+    }
+    res.json({ suggestions: [] });
+  });
+
   // Local semantic matcher fallback
   function performLocalSemanticSearch(query: string, games: any[]) {
     const q = query.toLowerCase();
