@@ -43,11 +43,14 @@ export default function App() {
           const jsonGames = await response.json();
           // Merge with any custom games saved in localStorage
           const savedCustom = localStorage.getItem('unblocked_custom_games');
-          const customGames = savedCustom ? JSON.parse(savedCustom) : [];
+          const customGames = savedCustom
+            ? JSON.parse(savedCustom).filter((g) => g.id !== 'sandbox-game')
+            : [];
 
           // Combine JSON games and user custom games
           const combined = [...jsonGames, ...customGames];
           setGames(combined);
+          setActiveGame((current) => (current?.id === 'sandbox-game' ? null : current));
         }
       } catch (err) {
         console.warn('Using bundled default games list', err);

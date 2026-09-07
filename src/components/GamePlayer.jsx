@@ -197,12 +197,13 @@ export const GamePlayer = ({
         <iframe
           key={iframeKey}
           ref={iframeRef}
-          id="active-game-iframe"
+          id={game.iframe.id || "active-game-iframe"}
           src={resolvedIframeSrc}
           title={game.iframe.title || game.title}
           allow={game.iframe.allow || 'autoplay; fullscreen; gamepad'}
-          sandbox={game.iframe.sandbox || 'allow-scripts allow-same-origin allow-pointer-lock'}
-          scrolling="no"
+          sandbox={game.iframe.sandbox || undefined}
+          allowFullScreen={game.iframe.allowFullScreen !== false}
+          scrolling={game.iframe.scrolling || "auto"}
           onLoad={() => setIsLoading(false)}
           className="w-full h-full border-0 bg-transparent block"
         />

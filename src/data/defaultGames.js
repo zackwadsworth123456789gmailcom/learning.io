@@ -1,5 +1,27 @@
 export const DEFAULT_GAMES = [
   {
+    id: "cookie-clicker",
+    title: "Cookie Clicker",
+    category: "Arcade",
+    description: "Bake trillions of cookies in the legendary incremental clicker game! Click the giant golden cookie, hire grandmas, build factories, and unlock hundreds of sweet upgrades.",
+    iframe: {
+      src: "https://script.google.com/macros/s/AKfycbxGM35J29NkO-2LYjxWj_cA9IUaaXypkUy-LqXyLRbGTz0R6lXmAEapz1STN1jlTIRavw/exec",
+      title: "Cookie Clicker",
+      width: "100%",
+      height: "100%",
+      frameBorder: "0",
+      allow: "autoplay; fullscreen; gamepad",
+      allowFullScreen: true,
+      scrolling: "auto"
+    },
+    themeColor: "#eab308",
+    icon: "Flame",
+    controls: "Click or tap the giant cookie to bake & buy upgrades",
+    featured: true,
+    rating: 5.0,
+    plays: 98400
+  },
+  {
     id: "snake",
     title: "Retro Snake",
     category: "Arcade",
