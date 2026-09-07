@@ -1,11 +1,12 @@
 import React from 'react';
-import { Gamepad2, Plus, FileCode, ShieldAlert, X } from 'lucide-react';
+import { Gamepad2, Plus, FileCode, ShieldAlert, X, Code2 } from 'lucide-react';
 
 export const Navbar = ({
   searchQuery,
   onSearchChange,
   onOpenAddModal,
   onOpenJsonModal,
+  onOpenTryItModal,
   onTriggerPanic,
   activeGameTitle,
   onBackToGrid,
@@ -68,6 +69,16 @@ export const Navbar = ({
 
         {/* Action controls */}
         <div className="flex items-center gap-2">
+          <button
+            id="open-tryit-editor-btn"
+            onClick={onOpenTryItModal}
+            className="inline-flex items-center gap-1.5 rounded bg-emerald-950/50 border border-emerald-500/50 hover:bg-emerald-900/60 px-2.5 py-1 text-xs font-bold text-emerald-300 transition-colors shadow-xs cursor-pointer"
+            title="Open W3Schools-style JavaScript TryIt Editor"
+          >
+            <Code2 className="h-3.5 w-3.5 text-emerald-400" />
+            <span className="text-[11px] font-mono">JS TryIt</span>
+          </button>
+
           <button
             id="view-json-btn"
             onClick={onOpenJsonModal}

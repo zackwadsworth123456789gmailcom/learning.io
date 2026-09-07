@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Bouncing DVD Logo Game</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000000;
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    #game-stage {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at center, #08080c 0%, #000000 100%);
+      overflow: hidden;
+    }
+
+    /* DVD Logo DOM Element */
+    .dvd-item {
+      position: absolute;
+      top: 0;
+      left: 0;
+      will-change: transform;
+      cursor: grab;
+      filter: drop-shadow(0 0 18px currentColor);
+      transition: color 0.12s ease-out;
+      z-index: 10;
+    }
+
+    .dvd-item:active {
+      cursor: grabbing;
+    }
+
+    /* Top HUD stats like bouncingdvdlogo.com */
+    .hud-top {
+      position: absolute;
+      top: 16px;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding: 0 16px;
+      pointer-events: none;
+      z-index: 30;
+    }
+
+    .hud-pill {
+      background: rgba(18, 18, 24, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding: 6px 16px;
+      border-radius: 9999px;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    }
+
+    .hud-pill.gold {
+      border-color: rgba(251, 191, 36, 0.6);
+      background: rgba(35, 26, 8, 0.9);
+      color: #fbbf24;
+      animation: gentle-glow 2s infinite alternate;
+    }
+
+    @keyframes gentle-glow {
+      from { box-shadow: 0 0 8px rgba(251, 191, 36, 0.2); }
+      to { box-shadow: 0 0 18px rgba(251, 191, 36, 0.6); }
+    }
+
+    .hud-val {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 16px;
+      font-weight: 800;
+      color: #38bdf8;
+    }
+
+    .hud-pill.gold .hud-val {
+      color: #f59e0b;
+    }
+
+    .hud-val.near {
+      color: #4ade80;
+    }
+
+    /* Wall counters display in corners */
+    .wall-marker {
+      position: absolute;
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+      font-weight: bold;
+      color: rgba(255, 255, 255, 0.25);
+      pointer-events: none;
+      z-index: 25;
+    }
+    #marker-top { top: 6px; left: 50%; transform: translateX(-50%); }
+    #marker-bottom { bottom: 60px; left: 50%; transform: translateX(-50%); }
+    #marker-left { left: 8px; top: 50%; transform: translateY(-50%) rotate(-90deg); }
+    #marker-right { right: 8px; top: 50%; transform: translateY(-50%) rotate(90deg); }
+
+    /* Floating Bottom Controls */
+    .controls-panel {
+      position: absolute;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(15, 15, 22, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      padding: 8px 16px;
+      border-radius: 9999px;
+      z-index: 35;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+      max-width: 95vw;
+      overflow-x: auto;
+    }
+
+    .btn-ctrl {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #e2e8f0;
+      padding: 6px 12px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .btn-ctrl:hover {
+      background: rgba(255, 255, 255, 0.22);
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+
+    .btn-ctrl:active {
+      transform: translateY(0);
+    }
+
+    .btn-ctrl.active {
+      background: #0284c7;
+      border-color: #38bdf8;
+      color: #ffffff;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+    }
+
+    .btn-ctrl.highlight {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      border-color: #fbbf24;
+      color: #000;
+      font-weight: 700;
+    }
+
+    /* Confetti Canvas for Corner Celebration */
+    #confetti-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 40;
+    }
+
+    /* Screen Flash for Corner Hit */
+    #flash-overlay {
+      position: absolute;
+      inset: 0;
+      background: #fbbf24;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 45;
+      transition: opacity 0.1s ease-out;
+    }
+
+    /* Corner Hit Celebration Banner */
+    #celebration-modal {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(8px);
+      z-index: 50;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    #celebration-modal.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .celebration-card {
+      background: #111827;
+      border: 2px solid #fbbf24;
+      border-radius: 20px;
+      padding: 32px 48px;
+      text-align: center;
+      box-shadow: 0 0 50px rgba(251, 191, 36, 0.5);
+      transform: scale(0.9);
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    #celebration-modal.visible .celebration-card {
+      transform: scale(1);
+    }
+
+    .celebration-title {
+      font-size: 40px;
+      font-weight: 900;
+      color: #fbbf24;
+      text-shadow: 0 0 25px #f59e0b;
+      margin-bottom: 8px;
+      letter-spacing: 1px;
+    }
+
+    .celebration-msg {
+      font-size: 16px;
+      color: #e2e8f0;
+      margin-bottom: 20px;
+    }
+
+    .close-btn {
+      background: #fbbf24;
+      color: #000000;
+      border: none;
+      padding: 8px 24px;
+      border-radius: 9999px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .close-btn:hover {
+      background: #f59e0b;
+      transform: scale(1.05);
+    }
+
+    /* Ghost trails canvas */
+    #trail-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 5;
+    }
+  </style>
+</head>
+<body>
+  <div id="game-stage">
+    <!-- Trail Canvas -->
+    <canvas id="trail-canvas"></canvas>
+
+    <!-- Wall hit markers -->
+    <div id="marker-top" class="wall-marker">TOP: <span id="w-top">0</span></div>
+    <div id="marker-bottom" class="wall-marker">BOTTOM: <span id="w-bottom">0</span></div>
+    <div id="marker-left" class="wall-marker">LEFT: <span id="w-left">0</span></div>
+    <div id="marker-right" class="wall-marker">RIGHT: <span id="w-right">0</span></div>
+
+    <!-- Top HUD like bouncingdvdlogo.com -->
+    <div class="hud-top">
+      <div class="hud-pill">
+        <span>Bounces:</span>
+        <span id="stat-bounces" class="hud-val">0</span>
+      </div>
+      <div class="hud-pill gold">
+        <span>🏆 Corner Hits:</span>
+        <span id="stat-corners" class="hud-val">0</span>
+      </div>
+      <div class="hud-pill">
+        <span>Nearest Corner:</span>
+        <span id="stat-near" class="hud-val">--</span>
+      </div>
+    </div>
+
+    <!-- Screen Flash -->
+    <div id="flash-overlay"></div>
+
+    <!-- Confetti Particle Layer -->
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- Celebration Popup -->
+    <div id="celebration-modal">
+      <div class="celebration-card">
+        <div class="celebration-title">🎉 CORNER HIT! 🎉</div>
+        <div class="celebration-msg">The DVD logo touched the exact corner! A legendary event!</div>
+        <button id="close-celebration" class="close-btn">Awesome!</button>
+      </div>
+    </div>
+
+    <!-- Bottom Controls -->
+    <div class="controls-panel">
+      <button id="ctrl-speed" class="btn-ctrl">Speed: 1x</button>
+      <button id="ctrl-size" class="btn-ctrl">Size: Normal</button>
+      <button id="ctrl-trail" class="btn-ctrl">Trail: OFF</button>
+      <button id="ctrl-sound" class="btn-ctrl active">🔊 Sound: ON</button>
+      <button id="ctrl-add" class="btn-ctrl">+ DVD</button>
+      <button id="ctrl-test-corner" class="btn-ctrl highlight" title="Simulate a corner hit celebration">⚡ Test Corner</button>
+      <button id="ctrl-reset" class="btn-ctrl">Reset</button>
+      <button id="ctrl-fullscreen" class="btn-ctrl">⛶ Fullscreen</button>
+    </div>
+  </div>
+
+  <script>
+    const stage = document.getElementById('game-stage');
+    const trailCanvas = document.getElementById('trail-canvas');
+    const trailCtx = trailCanvas.getContext('2d');
+    const confettiCanvas = document.getElementById('confetti-canvas');
+    const confettiCtx = confettiCanvas.getContext('2d');
+    const flashOverlay = document.getElementById('flash-overlay');
+    const celebrationModal = document.getElementById('celebration-modal');
+
+    // Stats
+    const statBounces = document.getElementById('stat-bounces');
+    const statCorners = document.getElementById('stat-corners');
+    const statNear = document.getElementById('stat-near');
+    const wTop = document.getElementById('w-top');
+    const wBottom = document.getElementById('w-bottom');
+    const wLeft = document.getElementById('w-left');
+    const wRight = document.getElementById('w-right');
+
+    // Controls
+    const btnSpeed = document.getElementById('ctrl-speed');
+    const btnSize = document.getElementById('ctrl-size');
+    const btnTrail = document.getElementById('ctrl-trail');
+    const btnSound = document.getElementById('ctrl-sound');
+    const btnAdd = document.getElementById('ctrl-add');
+    const btnTestCorner = document.getElementById('ctrl-test-corner');
+    const btnReset = document.getElementById('ctrl-reset');
+    const btnFullscreen = document.getElementById('ctrl-fullscreen');
+    const btnCloseCelebration = document.getElementById('close-celebration');
+
+    let totalBounces = 0;
+    let totalCorners = 0;
+    let wallCounts = { top: 0, bottom: 0, left: 0, right: 0 };
+    let soundEnabled = true;
+    let trailEnabled = false;
+
+    const SPEED_PRESETS = [
+      { label: '0.5x', factor: 0.5 },
+      { label: '1x', factor: 1.0 },
+      { label: '1.5x', factor: 1.5 },
+      { label: '2x', factor: 2.0 },
+      { label: '3x', factor: 3.0 },
+      { label: 'Turbo (5x)', factor: 5.0 }
+    ];
+    let speedIdx = 1;
+
+    const SIZES = [
+      { label: 'Small', w: 120, h: 63 },
+      { label: 'Normal', w: 160, h: 84 },
+      { label: 'Large', w: 220, h: 115 }
+    ];
+    let sizeIdx = 1;
+
+    // Iconic vibrant neon colors
+    const NEON_COLORS = [
+      '#ff0055', '#00f0ff', '#ffb700', '#00ff66',
+      '#9900ff', '#0099ff', '#ff5500', '#ff00b7',
+      '#00ffcc', '#e2e8f0'
+    ];
+
+    function resizeCanvases() {
+      const w = stage.clientWidth;
+      const h = stage.clientHeight;
+      trailCanvas.width = w;
+      trailCanvas.height = h;
+      confettiCanvas.width = w;
+      confettiCanvas.height = h;
+    }
+    window.addEventListener('resize', resizeCanvases);
+    resizeCanvases();
+
+    // Web Audio Synthesizer
+    let audioCtx = null;
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function playWallSound(freq = 440) {
+      if (!soundEnabled) return;
+      initAudio();
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(freq * 0.6, audioCtx.currentTime + 0.07);
+        gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.07);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.07);
+      } catch (e) {}
+    }
+
+    function playCornerFanfare() {
+      if (!soundEnabled) return;
+      initAudio();
+      const chord = [523.25, 659.25, 783.99, 1046.50]; // C Major arpeggio
+      chord.forEach((freq, idx) => {
+        setTimeout(() => {
+          try {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.4);
+          } catch (e) {}
+        }, idx * 100);
+      });
+    }
+
+    // DVD Logo SVG definition
+    function renderSvg(w, h) {
+      return `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 84" width="${w}" height="${h}">
+          <ellipse cx="80" cy="62" rx="66" ry="14" fill="none" stroke="currentColor" stroke-width="4.5"/>
+          <ellipse cx="80" cy="62" rx="18" ry="4" fill="none" stroke="currentColor" stroke-width="2"/>
+          <text x="80" y="46" font-family="'Arial Black', Impact, sans-serif" font-weight="900" font-size="44" font-style="italic" text-anchor="middle" fill="currentColor" letter-spacing="-1">DVD</text>
+          <rect x="36" y="68" width="88" height="13" rx="2" fill="currentColor"/>
+          <text x="80" y="78" font-family="Arial, sans-serif" font-weight="bold" font-size="9" fill="#000" text-anchor="middle" letter-spacing="3">VIDEO</text>
+        </svg>
+      `;
+    }
+
+    // Confetti System
+    let confettis = [];
+    function spawnConfetti() {
+      confettis = [];
+      const colors = ['#fbbf24', '#f59e0b', '#ec4899', '#38bdf8', '#4ade80', '#a855f7', '#f43f5e'];
+      const cx = stage.clientWidth / 2;
+      const cy = stage.clientHeight / 2;
+
+      for (let i = 0; i < 90; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = Math.random() * 12 + 4;
+        confettis.push({
+          x: cx,
+          y: cy,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed - 4,
+          size: Math.random() * 8 + 6,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          rotation: Math.random() * 360,
+          rotSpeed: (Math.random() - 0.5) * 15,
+          life: 1.0
+        });
+      }
+    }
+
+    function renderConfetti() {
+      confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+      if (confettis.length === 0) return;
+
+      confettis.forEach((c) => {
+        c.x += c.vx;
+        c.y += c.vy;
+        c.vy += 0.3; // gravity
+        c.vx *= 0.98;
+        c.rotation += c.rotSpeed;
+        c.life -= 0.008;
+
+        if (c.life > 0) {
+          confettiCtx.save();
+          confettiCtx.translate(c.x, c.y);
+          confettiCtx.rotate((c.rotation * Math.PI) / 180);
+          confettiCtx.fillStyle = c.color;
+          confettiCtx.globalAlpha = Math.max(0, c.life);
+          confettiCtx.fillRect(-c.size / 2, -c.size / 2, c.size, c.size * 0.6);
+          confettiCtx.restore();
+        }
+      });
+
+      confettis = confettis.filter((c) => c.life > 0);
+    }
+
+    class DvdObject {
+      constructor() {
+        this.w = SIZES[sizeIdx].w;
+        this.h = SIZES[sizeIdx].h;
+        this.x = Math.random() * (stage.clientWidth - this.w - 80) + 40;
+        this.y = Math.random() * (stage.clientHeight - this.h - 80) + 40;
+
+        // Randomized 45-degree angled trajectory
+        const baseSpeed = 2.6;
+        const dirX = Math.random() > 0.5 ? 1 : -1;
+        const dirY = Math.random() > 0.5 ? 1 : -1;
+        this.vx = dirX * baseSpeed;
+        this.vy = dirY * baseSpeed;
+
+        this.colorIdx = Math.floor(Math.random() * NEON_COLORS.length);
+        this.color = NEON_COLORS[this.colorIdx];
+
+        this.el = document.createElement('div');
+        this.el.className = 'dvd-item';
+        this.el.innerHTML = renderSvg(this.w, this.h);
+        this.el.style.color = this.color;
+        stage.appendChild(this.el);
+
+        this.isDragging = false;
+        this.dragStartX = 0;
+        this.dragStartY = 0;
+
+        this.setupDrag();
+        this.updatePos();
+      }
+
+      setupDrag() {
+        this.el.addEventListener('pointerdown', (e) => {
+          this.isDragging = true;
+          this.dragStartX = e.clientX - this.x;
+          this.dragStartY = e.clientY - this.y;
+          this.el.setPointerCapture(e.pointerId);
+          initAudio();
+        });
+
+        this.el.addEventListener('pointermove', (e) => {
+          if (!this.isDragging) return;
+          this.x = Math.max(0, Math.min(stage.clientWidth - this.w, e.clientX - this.dragStartX));
+          this.y = Math.max(0, Math.min(stage.clientHeight - this.h, e.clientY - this.dragStartY));
+          this.updatePos();
+        });
+
+        const stopDrag = (e) => {
+          if (this.isDragging) {
+            this.isDragging = false;
+            // Launch in direction of mouse release
+            this.vx = (Math.random() > 0.5 ? 1 : -1) * 2.6;
+            this.vy = (Math.random() > 0.5 ? 1 : -1) * 2.6;
+            this.nextColor();
+          }
+        };
+
+        this.el.addEventListener('pointerup', stopDrag);
+        this.el.addEventListener('pointercancel', stopDrag);
+      }
+
+      nextColor() {
+        let newIdx;
+        do {
+          newIdx = Math.floor(Math.random() * NEON_COLORS.length);
+        } while (newIdx === this.colorIdx && NEON_COLORS.length > 1);
+        this.colorIdx = newIdx;
+        this.color = NEON_COLORS[this.colorIdx];
+        this.el.style.color = this.color;
+      }
+
+      resize(newW, newH) {
+        this.w = newW;
+        this.h = newH;
+        this.el.innerHTML = renderSvg(this.w, this.h);
+        this.x = Math.min(this.x, stage.clientWidth - this.w);
+        this.y = Math.min(this.y, stage.clientHeight - this.h);
+        this.updatePos();
+      }
+
+      updatePos() {
+        this.el.style.transform = `translate3d(${this.x}px, ${this.y}px, 0)`;
+      }
+
+      destroy() {
+        this.el.remove();
+      }
+    }
+
+    const dvds = [new DvdObject()];
+
+    function triggerCornerEvent() {
+      totalCorners++;
+      statCorners.textContent = totalCorners;
+
+      // Golden flash
+      flashOverlay.style.opacity = '0.7';
+      setTimeout(() => {
+        flashOverlay.style.opacity = '0';
+      }, 150);
+
+      // Confetti & Audio
+      spawnConfetti();
+      playCornerFanfare();
+
+      // Show Banner
+      celebrationModal.classList.add('visible');
+    }
+
+    btnCloseCelebration.addEventListener('click', () => {
+      celebrationModal.classList.remove('visible');
+    });
+
+    // Main Game Loop
+    function loop() {
+      const sw = stage.clientWidth;
+      const sh = stage.clientHeight;
+      const speedMult = SPEED_PRESETS[speedIdx].factor;
+
+      if (trailEnabled) {
+        trailCtx.fillStyle = 'rgba(0, 0, 0, 0.12)';
+        trailCtx.fillRect(0, 0, trailCanvas.width, trailCanvas.height);
+      } else {
+        trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
+      }
+
+      dvds.forEach((dvd) => {
+        if (!dvd.isDragging) {
+          dvd.x += dvd.vx * speedMult;
+          dvd.y += dvd.vy * speedMult;
+
+          let hitX = false;
+          let hitY = false;
+
+          // Horizontal Boundary
+          if (dvd.x + dvd.w >= sw) {
+            dvd.x = sw - dvd.w;
+            dvd.vx = -Math.abs(dvd.vx);
+            hitX = true;
+            wallCounts.right++;
+            wRight.textContent = wallCounts.right;
+          } else if (dvd.x <= 0) {
+            dvd.x = 0;
+            dvd.vx = Math.abs(dvd.vx);
+            hitX = true;
+            wallCounts.left++;
+            wLeft.textContent = wallCounts.left;
+          }
+
+          // Vertical Boundary
+          if (dvd.y + dvd.h >= sh) {
+            dvd.y = sh - dvd.h;
+            dvd.vy = -Math.abs(dvd.vy);
+            hitY = true;
+            wallCounts.bottom++;
+            wBottom.textContent = wallCounts.bottom;
+          } else if (dvd.y <= 0) {
+            dvd.y = 0;
+            dvd.vy = Math.abs(dvd.vy);
+            hitY = true;
+            wallCounts.top++;
+            wTop.textContent = wallCounts.top;
+          }
+
+          if (hitX || hitY) {
+            totalBounces++;
+            statBounces.textContent = totalBounces;
+            dvd.nextColor();
+
+            // Simultaneous X & Y hit = CORNER HIT!
+            if (hitX && hitY) {
+              triggerCornerEvent();
+            } else {
+              playWallSound(hitX ? 480 : 380);
+            }
+          }
+
+          dvd.updatePos();
+
+          // Render ghost trail if enabled
+          if (trailEnabled) {
+            trailCtx.save();
+            trailCtx.globalAlpha = 0.25;
+            trailCtx.fillStyle = dvd.color;
+            trailCtx.beginPath();
+            trailCtx.roundRect(dvd.x, dvd.y, dvd.w, dvd.h, 12);
+            trailCtx.fill();
+            trailCtx.restore();
+          }
+        }
+
+        // Compute distance to nearest corner for primary DVD
+        if (dvd === dvds[0]) {
+          const dTL = Math.hypot(dvd.x, dvd.y);
+          const dTR = Math.hypot(sw - (dvd.x + dvd.w), dvd.y);
+          const dBL = Math.hypot(dvd.x, sh - (dvd.y + dvd.h));
+          const dBR = Math.hypot(sw - (dvd.x + dvd.w), sh - (dvd.y + dvd.h));
+          const nearest = Math.round(Math.min(dTL, dTR, dBL, dBR));
+
+          statNear.textContent = nearest + 'px';
+          if (nearest < 25) {
+            statNear.className = 'hud-val near';
+          } else {
+            statNear.className = 'hud-val';
+          }
+        }
+      });
+
+      renderConfetti();
+      requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+
+    // Controls Handlers
+    btnSpeed.addEventListener('click', () => {
+      speedIdx = (speedIdx + 1) % SPEED_PRESETS.length;
+      btnSpeed.textContent = `Speed: ${SPEED_PRESETS[speedIdx].label}`;
+    });
+
+    btnSize.addEventListener('click', () => {
+      sizeIdx = (sizeIdx + 1) % SIZES.length;
+      const s = SIZES[sizeIdx];
+      btnSize.textContent = `Size: ${s.label}`;
+      dvds.forEach((d) => d.resize(s.w, s.h));
+    });
+
+    btnTrail.addEventListener('click', () => {
+      trailEnabled = !trailEnabled;
+      btnTrail.textContent = trailEnabled ? 'Trail: ON' : 'Trail: OFF';
+      btnTrail.className = trailEnabled ? 'btn-ctrl active' : 'btn-ctrl';
+    });
+
+    btnSound.addEventListener('click', () => {
+      soundEnabled = !soundEnabled;
+      initAudio();
+      btnSound.textContent = soundEnabled ? '🔊 Sound: ON' : '🔇 Sound: OFF';
+      btnSound.className = soundEnabled ? 'btn-ctrl active' : 'btn-ctrl';
+    });
+
+    btnAdd.addEventListener('click', () => {
+      if (dvds.length < 8) {
+        dvds.push(new DvdObject());
+      }
+    });
+
+    btnTestCorner.addEventListener('click', () => {
+      // Reposition primary DVD directly into top-left corner and fire celebration!
+      const p = dvds[0];
+      p.x = 0;
+      p.y = 0;
+      p.vx = Math.abs(p.vx);
+      p.vy = Math.abs(p.vy);
+      p.updatePos();
+      triggerCornerEvent();
+    });
+
+    btnReset.addEventListener('click', () => {
+      totalBounces = 0;
+      totalCorners = 0;
+      wallCounts = { top: 0, bottom: 0, left: 0, right: 0 };
+      statBounces.textContent = '0';
+      statCorners.textContent = '0';
+      wTop.textContent = '0';
+      wBottom.textContent = '0';
+      wLeft.textContent = '0';
+      wRight.textContent = '0';
+
+      while (dvds.length > 1) {
+        const d = dvds.pop();
+        d.destroy();
+      }
+      dvds[0].x = stage.clientWidth / 2 - dvds[0].w / 2;
+      dvds[0].y = stage.clientHeight / 2 - dvds[0].h / 2;
+      dvds[0].updatePos();
+    });
+
+    btnFullscreen.addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    });
+
+    // Unmute audio on first user touch anywhere
+    window.addEventListener('pointerdown', () => {
+      initAudio();
+    }, { once: true });
+  </script>
+</body>
+</html>

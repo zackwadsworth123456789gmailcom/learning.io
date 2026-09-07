@@ -1,5 +1,5 @@
 import React from 'react';
-import { Heart, Play, Gamepad2, Rocket, Trophy, Grid, Layers, Flame, Dices, Zap } from 'lucide-react';
+import { Heart, Play, Gamepad2, Rocket, Trophy, Grid, Layers, Flame, Dices, Zap, Disc, Tv } from 'lucide-react';
 
 const getCategoryBg = (category) => {
   switch (category?.toLowerCase()) {
@@ -21,6 +21,8 @@ const getIconComponent = (iconName) => {
     case 'Trophy': return <Trophy className="h-5 w-5 text-white" />;
     case 'Zap': return <Zap className="h-5 w-5 text-white" />;
     case 'Dices': return <Dices className="h-5 w-5 text-white" />;
+    case 'Disc': return <Disc className="h-5 w-5 text-white" />;
+    case 'Tv': return <Tv className="h-5 w-5 text-white" />;
     default: return <Gamepad2 className="h-5 w-5 text-white" />;
   }
 };

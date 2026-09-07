@@ -6,12 +6,14 @@ import { GameCard } from './components/GameCard.jsx';
 import { GamePlayer } from './components/GamePlayer.jsx';
 import { AddGameModal } from './components/AddGameModal.jsx';
 import { JsonViewerModal } from './components/JsonViewerModal.jsx';
+import { JsTryItEditorModal } from './components/JsTryItEditorModal.jsx';
 import { PanicOverlay } from './components/PanicOverlay.jsx';
 import {
   Flame,
   Search,
   FileCode,
   RotateCcw,
+  Code2,
 } from 'lucide-react';
 
 export default function App() {
@@ -30,6 +32,7 @@ export default function App() {
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isJsonModalOpen, setIsJsonModalOpen] = useState(false);
+  const [isTryItModalOpen, setIsTryItModalOpen] = useState(false);
   const [isPanicActive, setIsPanicActive] = useState(false);
 
   // Load from games.json on mount
@@ -143,6 +146,7 @@ export default function App() {
         onSearchChange={setSearchQuery}
         onOpenAddModal={() => setIsAddModalOpen(true)}
         onOpenJsonModal={() => setIsJsonModalOpen(true)}
+        onOpenTryItModal={() => setIsTryItModalOpen(true)}
         onTriggerPanic={() => setIsPanicActive(true)}
         activeGameTitle={activeGame?.title}
         onBackToGrid={() => setActiveGame(null)}
@@ -200,6 +204,25 @@ export default function App() {
                 <span className="text-zinc-200 font-bold">{games.length} TITLES</span>
               </div>
             </div>
+          </div>
+
+          <div>
+            <h3 className="text-[10px] font-black uppercase text-zinc-500 tracking-[0.2em] mb-2.5">
+              Dev Tools
+            </h3>
+            <button
+              id="sidebar-tryit-btn"
+              onClick={() => setIsTryItModalOpen(true)}
+              className="w-full flex items-center justify-between rounded bg-zinc-900 border border-zinc-800 hover:border-emerald-500/50 hover:bg-zinc-850 p-2 text-xs transition-colors cursor-pointer group"
+            >
+              <div className="flex items-center gap-2">
+                <Code2 className="h-3.5 w-3.5 text-emerald-400" />
+                <span className="text-[11px] font-mono text-zinc-200 group-hover:text-white">JS TryIt</span>
+              </div>
+              <span className="text-[9px] font-mono bg-emerald-500/20 text-emerald-300 px-1 py-0.5 rounded font-bold">
+                Run »
+              </span>
+            </button>
           </div>
 
           {games.some((g) => g.isCustom) && (
@@ -340,6 +363,11 @@ export default function App() {
         games={games}
       />
 
+      <JsTryItEditorModal
+        isOpen={isTryItModalOpen}
+        onClose={() => setIsTryItModalOpen(false)}
+      />
+
       {/* High-Density Ticker Footer */}
       <footer className="flex flex-wrap items-center justify-between px-6 py-2 bg-zinc-900 border-t border-zinc-800 text-[10px] text-zinc-500 uppercase tracking-widest shrink-0 select-none">
         <div className="flex items-center gap-6">
@@ -349,7 +377,12 @@ export default function App() {
         </div>
 
         <div className="flex items-center gap-4">
-          <span className="hidden md:inline">Built for speed • No Ads • Version 2.4.1-stable</span>
+          <button
+            onClick={() => setIsTryItModalOpen(true)}
+            className="text-emerald-400 hover:text-emerald-300 transition-colors font-mono font-bold cursor-pointer flex items-center gap-1"
+          >
+            <span>&lt;/&gt; JS TryIt Editor</span>
+          </button>
           <button
             onClick={() => setIsJsonModalOpen(true)}
             className="text-indigo-400 hover:text-indigo-300 transition-colors font-mono cursor-pointer"

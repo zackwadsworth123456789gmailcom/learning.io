@@ -22,6 +22,27 @@
     "plays": 98400
   },
   {
+    "id": "dvd-logo",
+    "title": "Bouncing DVD Logo",
+    "category": "Arcade",
+    "description": "The legendary DVD Screensaver game inspired by bouncingdvdlogo.com! Watch the neon DVD logo bounce around the screen, change colors, count wall bounces, and celebrate rare corner hits.",
+    "iframe": {
+      "src": "/games/dvd-logo.html",
+      "title": "Bouncing DVD Logo Game",
+      "width": "100%",
+      "height": "100%",
+      "frameBorder": "0",
+      "allow": "autoplay; fullscreen",
+      "sandbox": "allow-scripts allow-same-origin"
+    },
+    "themeColor": "#06b6d4",
+    "icon": "Disc",
+    "controls": "Click/drag to fling • Speed, size, trail & sound controls in bottom bar",
+    "featured": true,
+    "rating": 5.0,
+    "plays": 45200
+  },
+  {
     "id": "snake",
     "title": "Retro Snake",
     "category": "Arcade",
