@@ -72,10 +72,10 @@ export const Navbar = ({
                   type="button"
                   onClick={onOpenAiSearchModal}
                   className="flex items-center gap-1 text-[10px] font-mono text-purple-400 bg-purple-950/60 border border-purple-500/40 hover:bg-purple-900/60 px-1.5 py-0.5 rounded cursor-pointer"
-                  title="Search with AI"
+                  title="Ask AI to solve any question (no code)"
                 >
                   <Sparkles className="h-2.5 w-2.5" />
-                  <span>AI</span>
+                  <span>Ask AI</span>
                 </button>
               )}
             </div>
@@ -84,15 +84,15 @@ export const Navbar = ({
 
         {/* Action controls */}
         <div className="flex items-center gap-2">
-          {/* AI Search Tab - placed right by JS TryIt */}
+          {/* Ask AI Tab - placed right by JS TryIt */}
           <button
             id="open-ai-search-btn"
             onClick={onOpenAiSearchModal}
             className="inline-flex items-center gap-1.5 rounded bg-purple-950/60 border border-purple-500/50 hover:bg-purple-900/70 hover:border-purple-400 px-2.5 py-1 text-xs font-bold text-purple-300 transition-colors shadow-xs cursor-pointer group"
-            title="Open AI Semantic Search & Smart Recommendations"
+            title="Ask AI to solve questions step-by-step without code"
           >
             <Sparkles className="h-3.5 w-3.5 text-purple-400 group-hover:animate-pulse" />
-            <span className="text-[11px] font-mono">AI Search</span>
+            <span className="text-[11px] font-mono">Ask AI</span>
           </button>
 
           {/* JS TryIt Tab */}

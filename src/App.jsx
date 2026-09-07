@@ -223,10 +223,11 @@ export default function App() {
                 id="sidebar-ai-search-btn"
                 onClick={() => setIsAiSearchModalOpen(true)}
                 className="w-full flex items-center justify-between rounded bg-zinc-900 border border-zinc-800 hover:border-purple-500/50 hover:bg-zinc-850 p-2 text-xs transition-colors cursor-pointer group"
+                title="Ask AI to solve questions step-by-step (without code)"
               >
                 <div className="flex items-center gap-2">
                   <Sparkles className="h-3.5 w-3.5 text-purple-400 group-hover:animate-pulse" />
-                  <span className="text-[11px] font-mono text-zinc-200 group-hover:text-white">AI Search</span>
+                  <span className="text-[11px] font-mono text-zinc-200 group-hover:text-white">Ask AI (Solver)</span>
                 </div>
                 <span className="text-[9px] font-mono bg-purple-500/20 text-purple-300 px-1 py-0.5 rounded font-bold">
                   Gemini »
@@ -419,20 +420,9 @@ export default function App() {
       <AiSearchModal
         isOpen={isAiSearchModalOpen}
         onClose={() => setIsAiSearchModalOpen(false)}
-        games={games}
-        favorites={favorites}
-        onToggleFavorite={toggleFavorite}
-        onSelectGame={(game) => {
-          setActiveGame(game);
-          setIsAiSearchModalOpen(false);
-        }}
         onOpenTryIt={() => {
           setIsAiSearchModalOpen(false);
           setIsTryItModalOpen(true);
-        }}
-        onOpenAddModal={() => {
-          setIsAiSearchModalOpen(false);
-          setIsAddModalOpen(true);
         }}
       />
 
@@ -459,17 +449,18 @@ export default function App() {
                 ? 'text-red-400 hover:text-red-300 animate-pulse'
                 : 'text-zinc-400 hover:text-red-300'
             }`}
-            title="Toggle moving Among Us at the bottom of the screen"
+            title="Toggle Among Us wall crawlers"
           >
             <span>ඞ</span>
-            <span>Among Us {isAmongUsActive ? '(Walking)' : ''}</span>
+            <span>Among Us {isAmongUsActive ? '(Wall Crawling)' : ''}</span>
           </button>
           <button
             onClick={() => setIsAiSearchModalOpen(true)}
             className="text-purple-400 hover:text-purple-300 transition-colors font-mono font-bold cursor-pointer flex items-center gap-1"
+            title="Ask AI questions"
           >
             <Sparkles className="h-3 w-3" />
-            <span>AI Search</span>
+            <span>Ask AI</span>
           </button>
           <button
             onClick={() => setIsTryItModalOpen(true)}
