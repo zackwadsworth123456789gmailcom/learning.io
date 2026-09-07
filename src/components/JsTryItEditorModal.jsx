@@ -203,7 +203,7 @@ const JS_PRESETS = [
   <div class="hud">
     <div class="badge">Balls: <span id="ball-count" class="highlight">0</span></div>
     <div class="badge">Collisions: <span id="col-count" class="accent">0</span></div>
-    <div class="badge hidden-sm">Click canvas to launch!</div>
+    <div class="badge">Energy Loss: <span id="energy-loss-badge" class="highlight">None (100%)</span></div>
   </div>
 
   <canvas id="c" width="440" height="280"></canvas>
@@ -211,6 +211,7 @@ const JS_PRESETS = [
   <div class="controls">
     <button id="add-btn">+ Add 5 Balls</button>
     <button id="grav-btn" class="active">Gravity: ON</button>
+    <button id="elastic-btn" class="active" title="Toggle energy loss on bounces">Loss: 0% (Elastic)</button>
     <button id="clear-btn">Clear All</button>
   </div>
 
@@ -220,10 +221,14 @@ const JS_PRESETS = [
     const ballCountEl = document.getElementById('ball-count');
     const colCountEl = document.getElementById('col-count');
     const gravBtn = document.getElementById('grav-btn');
+    const elasticBtn = document.getElementById('elastic-btn');
+    const energyBadge = document.getElementById('energy-loss-badge');
 
     let balls = [];
     let collisionCount = 0;
     let gravityEnabled = true;
+    let elasticity = 1.0; // 1.0 = zero energy loss (100% perfectly elastic)
+
     const colors = [
       '#f43f5e', '#ec4899', '#d946ef', '#a855f7',
       '#6366f1', '#3b82f6', '#06b6d4', '#10b981',
@@ -271,12 +276,26 @@ const JS_PRESETS = [
       gravBtn.className = gravityEnabled ? 'active' : '';
     });
 
+    elasticBtn.addEventListener('click', () => {
+      if (elasticity === 1.0) {
+        elasticity = 0.98;
+        elasticBtn.textContent = 'Loss: ~2% (Low)';
+        elasticBtn.className = '';
+        energyBadge.textContent = 'Low (98%)';
+      } else {
+        elasticity = 1.0;
+        elasticBtn.textContent = 'Loss: 0% (Elastic)';
+        elasticBtn.className = 'active';
+        energyBadge.textContent = 'None (100%)';
+      }
+    });
+
     function loop() {
       // Semi-transparent background for subtle motion trails
       ctx.fillStyle = 'rgba(2, 6, 23, 0.35)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // 1. Move balls and apply gravity
+      // 1. Move balls and apply gravity (Zero air drag: no velocity damping)
       balls.forEach(b => {
         if (gravityEnabled) {
           b.vy += 0.2; // Gravity force
@@ -284,12 +303,10 @@ const JS_PRESETS = [
         b.x += b.vx;
         b.y += b.vy;
 
-        // Air drag
-        b.vx *= 0.998;
-        b.vy *= 0.998;
+        // Note: No air drag (vx and vy are not decayed), keeping kinetic energy intact
 
-        // Bounce walls with restitution
-        const restitution = 0.88;
+        // Bounce walls with zero energy loss (elasticity = 1.0)
+        const restitution = elasticity;
         if (b.x - b.radius < 0) {
           b.x = b.radius;
           b.vx = Math.abs(b.vx) * restitution;
@@ -304,6 +321,13 @@ const JS_PRESETS = [
         } else if (b.y + b.radius > canvas.height) {
           b.y = canvas.height - b.radius;
           b.vy = -Math.abs(b.vy) * restitution;
+        }
+
+        // Speed sanity limiter to prevent multi-body pinching overflow
+        const spd = Math.hypot(b.vx, b.vy);
+        if (spd > 18) {
+          b.vx = (b.vx / spd) * 18;
+          b.vy = (b.vy / spd) * 18;
         }
 
         if (b.flash > 0) b.flash--;
@@ -345,8 +369,8 @@ const JS_PRESETS = [
               const m1 = b1.radius * b1.radius;
               const m2 = b2.radius * b2.radius;
 
-              // Restitution (elasticity)
-              const e = 0.92;
+              // Restitution (elasticity = 1.0 for zero kinetic energy loss)
+              const e = elasticity;
               const impulse = ((1 + e) * velAlongNormal) / (1 / m1 + 1 / m2);
 
               b1.vx -= (impulse / m1) * nx;
@@ -1125,7 +1149,15 @@ const JS_PRESETS = [
 
 export const JsTryItEditorModal = ({ isOpen, onClose }) => {
   const [code, setCode] = useState(() => {
-    return localStorage.getItem('unblocked_tryit_code') || JS_PRESETS[0].code;
+    try {
+      const saved = localStorage.getItem('unblocked_tryit_code');
+      if (saved && (saved.includes('restitution = 0.88') || saved.includes('e = 0.92'))) {
+        return JS_PRESETS[1].code; // Upgrade to zero-energy-loss physics
+      }
+      return saved || JS_PRESETS[0].code;
+    } catch {
+      return JS_PRESETS[0].code;
+    }
   });
   const [selectedPreset, setSelectedPreset] = useState(JS_PRESETS[0].name);
   const [logs, setLogs] = useState([]);

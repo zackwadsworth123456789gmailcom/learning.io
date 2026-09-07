@@ -27,28 +27,47 @@ export const AddGameModal = ({
       return;
     }
 
-    // Parse src if someone pasted a full <iframe src="..."> snippet
+    // Parse src and attributes if someone pasted a full <iframe ...> snippet
     let cleanSrc = iframeSrc.trim();
-    if (cleanSrc.includes('<iframe') && cleanSrc.includes('src=')) {
-      const match = cleanSrc.match(/src=["'](.*?)["']/);
-      if (match && match[1]) {
-        cleanSrc = match[1];
-      }
+    let gameTitle = title.trim();
+    let iframeId = 'active-game-iframe';
+    let iframeClass = 'iframe-default';
+
+    if (cleanSrc.includes('<iframe')) {
+      const srcMatch = cleanSrc.match(/src=["'](.*?)["']/i);
+      if (srcMatch && srcMatch[1]) cleanSrc = srcMatch[1];
+
+      const titleMatch = cleanSrc.match(/title=["'](.*?)["']/i);
+      if (!gameTitle && titleMatch && titleMatch[1]) gameTitle = titleMatch[1];
+
+      const idMatch = cleanSrc.match(/id=["'](.*?)["']/i);
+      if (idMatch && idMatch[1]) iframeId = idMatch[1];
+
+      const classMatch = cleanSrc.match(/class(?:Name)?=["'](.*?)["']/i);
+      if (classMatch && classMatch[1]) iframeClass = classMatch[1];
+    }
+
+    if (!gameTitle) {
+      setError('Please provide a game title.');
+      return;
     }
 
     const newGame = {
       id: 'custom-' + Date.now(),
-      title: title.trim(),
+      title: gameTitle,
       category,
       description: description.trim() || 'Custom unblocked game embedded via iframe.',
       iframe: {
+        id: iframeId,
         src: cleanSrc,
-        title: `${title} Iframe Game`,
+        title: `${gameTitle} Game`,
         width: '100%',
         height: '100%',
         frameBorder: '0',
+        className: iframeClass,
         allow: 'autoplay; fullscreen; gamepad',
-        sandbox: 'allow-scripts allow-same-origin allow-pointer-lock',
+        allowFullScreen: true,
+        scrolling: 'auto',
       },
       themeColor,
       icon: 'Gamepad2',

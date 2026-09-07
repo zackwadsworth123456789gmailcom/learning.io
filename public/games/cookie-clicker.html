@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Cookie Clicker - Orteil</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    body {
+      background: #09090b;
+      color: #f4f4f5;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top bar */
+    #top-bar {
+      height: 42px;
+      background: #18181b;
+      border-bottom: 1px solid #27272a;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 12px;
+      flex-shrink: 0;
+      z-index: 50;
+      gap: 8px;
+    }
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .cookie-icon {
+      font-size: 20px;
+      animation: spinSlow 20s linear infinite;
+      display: inline-block;
+    }
+    @keyframes spinSlow {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .game-title {
+      font-weight: 800;
+      font-size: 13px;
+      letter-spacing: -0.02em;
+      color: #fbbf24;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .badge-creator {
+      font-size: 10px;
+      background: #27272a;
+      color: #a1a1aa;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-weight: normal;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-action {
+      background: #27272a;
+      border: 1px solid #3f3f46;
+      color: #e4e4e7;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      text-decoration: none;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .btn-action:hover {
+      background: #3f3f46;
+      color: #ffffff;
+      border-color: #52525b;
+    }
+    .btn-action.highlight {
+      background: #ca8a04;
+      border-color: #eab308;
+      color: #ffffff;
+    }
+    .btn-action.highlight:hover {
+      background: #d97706;
+    }
+    .btn-action.active {
+      background: #4f46e5;
+      border-color: #6366f1;
+      color: #ffffff;
+    }
+
+    /* Container for Orteil iframe & Offline engine */
+    #content-container {
+      flex: 1;
+      position: relative;
+      width: 100%;
+      height: calc(100vh - 42px);
+      background: #000000;
+      overflow: hidden;
+    }
+
+    #orteil-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+      background: #000;
+    }
+
+    /* Fallback / Offline banner if network stalls */
+    #mirror-loader {
+      position: absolute;
+      inset: 0;
+      background: #09090b;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+      padding: 24px;
+      text-align: center;
+      transition: opacity 0.3s ease;
+    }
+    .spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid #27272a;
+      border-top-color: #eab308;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 16px;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    #mirror-loader p {
+      font-size: 13px;
+      color: #a1a1aa;
+      margin-bottom: 8px;
+      max-width: 420px;
+    }
+    #mirror-loader .trouble-box {
+      margin-top: 14px;
+      background: #18181b;
+      border: 1px solid #27272a;
+      border-radius: 8px;
+      padding: 14px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      align-items: center;
+    }
+
+    /* ========================================================
+       OFFLINE ARCADE COOKIE CLICKER ENGINE (Self-Contained)
+       ======================================================== */
+    #offline-app {
+      display: none;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 30% 50%, #1e1b18 0%, #0c0a09 100%);
+      color: #f5f5f4;
+      position: absolute;
+      inset: 0;
+      z-index: 10;
+    }
+    #offline-app.active {
+      display: flex;
+    }
+
+    /* Left column: The Giant Cookie */
+    .left-bakery {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      padding: 20px;
+      border-right: 1px solid #292524;
+      background: radial-gradient(circle at center, rgba(120, 53, 15, 0.15) 0%, transparent 70%);
+      overflow: hidden;
+    }
+    .bakery-stats {
+      text-align: center;
+      margin-bottom: 24px;
+      z-index: 5;
+    }
+    .bakery-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #d97706;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .cookies-count {
+      font-size: 38px;
+      font-weight: 900;
+      color: #fef3c7;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+      font-variant-numeric: tabular-nums;
+    }
+    .cps-count {
+      font-size: 14px;
+      color: #fde68a;
+      margin-top: 2px;
+      font-weight: 600;
+      opacity: 0.9;
+    }
+    .frenzy-banner {
+      display: none;
+      margin-top: 8px;
+      background: #dc2626;
+      color: white;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 3px 12px;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(220, 38, 38, 0.6);
+      animation: pulse 1s infinite alternate;
+    }
+    @keyframes pulse {
+      from { opacity: 0.8; transform: scale(0.98); }
+      to { opacity: 1; transform: scale(1.02); }
+    }
+
+    /* Giant Cookie Element */
+    .cookie-stage {
+      position: relative;
+      width: 240px;
+      height: 240px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 5;
+    }
+    .cookie-halo {
+      position: absolute;
+      width: 280px;
+      height: 280px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(251, 191, 36, 0.25) 0%, transparent 70%);
+      animation: pulseGlow 3s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes pulseGlow {
+      0%, 100% { transform: scale(0.95); opacity: 0.4; }
+      50% { transform: scale(1.1); opacity: 0.8; }
+    }
+    .giant-cookie-btn {
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #d97706, #92400e 65%, #451a03 100%);
+      border: 6px solid #78350f;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7), inset 0 3px 8px rgba(255, 255, 255, 0.3);
+      cursor: pointer;
+      position: relative;
+      outline: none;
+      transition: transform 0.06s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .giant-cookie-btn:active {
+      transform: scale(0.93) rotate(1deg);
+    }
+    /* Choc chips on giant cookie */
+    .chip {
+      position: absolute;
+      background: #271202;
+      border-radius: 50%;
+      box-shadow: inset 1px 1px 2px rgba(255,255,255,0.1), 0 2px 3px rgba(0,0,0,0.5);
+    }
+
+    /* Floating numbers on click */
+    .click-number {
+      position: absolute;
+      font-size: 20px;
+      font-weight: 900;
+      color: #ffffff;
+      text-shadow: 0 0 8px rgba(251, 191, 36, 0.9), 0 2px 4px #000;
+      pointer-events: none;
+      animation: floatUp 0.9s ease-out forwards;
+      z-index: 30;
+      white-space: nowrap;
+    }
+    @keyframes floatUp {
+      0% { opacity: 1; transform: translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateY(-70px) scale(1.3); }
+    }
+
+    /* Golden Cookie */
+    .golden-cookie {
+      position: absolute;
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #fef08a, #eab308 60%, #a16207 100%);
+      border: 3px solid #fef9c3;
+      box-shadow: 0 0 20px #facc15, 0 0 35px #ca8a04;
+      cursor: pointer;
+      z-index: 40;
+      animation: shimmer 1.5s infinite alternate, goldenFloat 6s ease-in-out infinite;
+    }
+    @keyframes shimmer {
+      from { filter: brightness(1) drop-shadow(0 0 10px #fde047); }
+      to { filter: brightness(1.3) drop-shadow(0 0 25px #f59e0b); }
+    }
+    @keyframes goldenFloat {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      50% { transform: translate(15px, -15px) rotate(15deg); }
+    }
+
+    /* Right column: Buildings & Upgrades Shop */
+    .right-shop {
+      width: 380px;
+      background: #141210;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      border-left: 1px solid #292524;
+      overflow: hidden;
+    }
+    .shop-header {
+      padding: 10px 14px;
+      background: #1c1917;
+      border-bottom: 1px solid #292524;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .shop-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: #fef08a;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    /* Upgrades Tray */
+    .upgrades-tray {
+      padding: 8px 10px;
+      background: #181512;
+      border-bottom: 1px solid #292524;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      min-height: 48px;
+    }
+    .upgrade-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 6px;
+      background: #292524;
+      border: 1px solid #44403c;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      position: relative;
+      transition: all 0.1s;
+    }
+    .upgrade-btn:hover {
+      border-color: #facc15;
+      transform: scale(1.08);
+    }
+    .upgrade-btn.disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      filter: grayscale(1);
+    }
+
+    /* Buildings List */
+    .buildings-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .building-card {
+      background: #1c1917;
+      border: 1px solid #292524;
+      border-radius: 6px;
+      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: all 0.12s;
+    }
+    .building-card:hover:not(.disabled) {
+      background: #292524;
+      border-color: #78350f;
+    }
+    .building-card.disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .building-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .building-icon {
+      font-size: 24px;
+      width: 32px;
+      text-align: center;
+    }
+    .building-meta h4 {
+      font-size: 13px;
+      font-weight: 700;
+      color: #f5f5f4;
+    }
+    .building-meta span {
+      font-size: 11px;
+      color: #fde047;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+    .building-count {
+      font-size: 22px;
+      font-weight: 900;
+      color: #a8a29e;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Footer / controls */
+    .offline-footer {
+      padding: 8px 12px;
+      background: #181512;
+      border-top: 1px solid #292524;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 10px;
+      color: #78716c;
+    }
+    .btn-sub {
+      background: #292524;
+      border: 1px solid #44403c;
+      color: #a8a29e;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      cursor: pointer;
+    }
+    .btn-sub:hover {
+      color: #f5f5f4;
+      border-color: #78716c;
+    }
+
+    /* Toast notification */
+    #toast {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #27272a;
+      border: 1px solid #eab308;
+      color: #fef08a;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.7);
+      transition: transform 0.3s ease;
+      z-index: 100;
+      pointer-events: none;
+    }
+    #toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    @media (max-width: 768px) {
+      #offline-app {
+        flex-direction: column;
+      }
+      .right-shop {
+        width: 100%;
+        height: 48%;
+      }
+      .cookie-stage {
+        width: 180px;
+        height: 180px;
+      }
+      .giant-cookie-btn {
+        width: 160px;
+        height: 160px;
+      }
+      .cookies-count {
+        font-size: 28px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Controls & Switcher Bar -->
+  <header id="top-bar">
+    <div class="brand-section">
+      <span class="cookie-icon">🍪</span>
+      <span class="game-title">Cookie Clicker <span class="badge-creator">by Orteil</span></span>
+    </div>
+
+    <div class="nav-actions">
+      <!-- Mode Toggle -->
+      <button id="toggle-mode-btn" class="btn-action active" title="Switch between Orteil Web Edition and Offline Engine">
+        <span id="mode-icon">🌐</span>
+        <span id="mode-text">Orteil Web Edition</span>
+      </button>
+
+      <!-- Reload current mode -->
+      <button id="reload-btn" class="btn-action" title="Reload game">
+        ↻ Reload
+      </button>
+
+      <!-- Direct Official Orteil Site link -->
+      <a href="https://orteil.dashnet.org/cookieclicker/" target="_blank" rel="noopener noreferrer" class="btn-action highlight" title="Open official game at orteil.dashnet.org in a new tab">
+        <span>🌐 orteil.dashnet.org ↗</span>
+      </a>
+    </div>
+  </header>
+
+  <main id="content-container">
+    <!-- 1. Authentic Orteil Cookie Clicker Iframe (Primary) -->
+    <iframe
+      id="orteil-iframe"
+      src="https://ozh.github.io/cookieclicker/"
+      title="Cookie Clicker - Orteil Web Edition"
+      allow="autoplay; fullscreen; gamepad"
+      allowfullscreen
+    ></iframe>
+
+    <!-- Loading / Network Warning Overlay for Iframe -->
+    <div id="mirror-loader">
+      <div class="spinner"></div>
+      <h3 style="font-size: 15px; font-weight: 700; color: #fbbf24; margin-bottom: 6px;">Loading Cookie Clicker...</h3>
+      <p>Connecting to Orteil's web edition mirror.</p>
+
+      <div class="trouble-box" id="trouble-helper" style="display: none;">
+        <span style="font-size: 12px; color: #f87171; font-weight: 600;">Taking longer than expected?</span>
+        <p style="font-size: 11px; margin: 0;">Your school or network firewall might block third-party web games.</p>
+        <div style="display: flex; gap: 8px;">
+          <button id="switch-offline-direct" class="btn-action highlight">
+            ⚡ Play Offline Arcade Engine
+          </button>
+          <a href="https://orteil.dashnet.org/cookieclicker/" target="_blank" rel="noopener noreferrer" class="btn-action">
+            Open orteil.dashnet.org ↗
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Rich Offline Arcade Cookie Clicker Engine (Self-Contained Backup) -->
+    <div id="offline-app">
+      <!-- Left Column: Giant Cookie & Stats -->
+      <div class="left-bakery">
+        <div class="bakery-stats">
+          <div class="bakery-name">Orteil's Bakery</div>
+          <div class="cookies-count" id="offline-cookies">0 cookies</div>
+          <div class="cps-count" id="offline-cps">per second: 0.0</div>
+          <div class="frenzy-banner" id="offline-frenzy-banner">🔥 FRENZY! (7x CpS)</div>
+        </div>
+
+        <div class="cookie-stage" id="cookie-stage">
+          <div class="cookie-halo"></div>
+          <button class="giant-cookie-btn" id="offline-cookie-btn" aria-label="Bake Cookie">
+            <!-- Authentic chocolate chips scattered across the cookie surface -->
+            <div class="chip" style="width: 22px; height: 20px; top: 38px; left: 45px;"></div>
+            <div class="chip" style="width: 26px; height: 24px; top: 75px; left: 115px;"></div>
+            <div class="chip" style="width: 20px; height: 22px; top: 45px; left: 140px;"></div>
+            <div class="chip" style="width: 24px; height: 25px; top: 125px; left: 40px;"></div>
+            <div class="chip" style="width: 28px; height: 26px; top: 135px; left: 130px;"></div>
+            <div class="chip" style="width: 22px; height: 22px; top: 90px; left: 70px;"></div>
+            <div class="chip" style="width: 18px; height: 18px; top: 165px; left: 85px;"></div>
+          </button>
+        </div>
+
+        <!-- Golden Cookie Container -->
+        <div id="golden-cookie-holder"></div>
+      </div>
+
+      <!-- Right Column: Upgrades & Buildings Shop -->
+      <div class="right-shop">
+        <div class="shop-header">
+          <span class="shop-title">Store</span>
+          <span style="font-size: 11px; color: #a8a29e;" id="total-buildings-count">0 items</span>
+        </div>
+
+        <!-- Upgrades Tray -->
+        <div class="upgrades-tray" id="upgrades-tray" title="Available Upgrades">
+          <!-- Upgrades injected via JS -->
+        </div>
+
+        <!-- Buildings List -->
+        <div class="buildings-scroll" id="buildings-list">
+          <!-- Buildings injected via JS -->
+        </div>
+
+        <!-- Offline Footer controls -->
+        <div class="offline-footer">
+          <span>Mode: Standalone Engine</span>
+          <div style="display: flex; gap: 6px;">
+            <button class="btn-sub" id="sound-btn">Sound: ON</button>
+            <button class="btn-sub" id="save-btn">Save</button>
+            <button class="btn-sub" id="reset-btn">Reset</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="toast">Achievement Unlocked!</div>
+
+  <script>
+    // =========================================================================
+    // 1. IFRAME CONTROLLER & NETWORK DETECTION
+    // =========================================================================
+    const iframe = document.getElementById('orteil-iframe');
+    const mirrorLoader = document.getElementById('mirror-loader');
+    const troubleHelper = document.getElementById('trouble-helper');
+    const toggleModeBtn = document.getElementById('toggle-mode-btn');
+    const reloadBtn = document.getElementById('reload-btn');
+    const modeIcon = document.getElementById('mode-icon');
+    const modeText = document.getElementById('mode-text');
+    const offlineApp = document.getElementById('offline-app');
+    const switchOfflineDirect = document.getElementById('switch-offline-direct');
+
+    let currentMode = 'web'; // 'web' or 'offline'
+
+    // Show trouble helper if iframe hasn't loaded within 5 seconds
+    const troubleTimer = setTimeout(() => {
+      if (mirrorLoader && mirrorLoader.style.display !== 'none') {
+        troubleHelper.style.display = 'flex';
+      }
+    }, 4500);
+
+    // When iframe finishes loading
+    iframe.addEventListener('load', () => {
+      clearTimeout(troubleTimer);
+      mirrorLoader.style.opacity = '0';
+      setTimeout(() => {
+        mirrorLoader.style.display = 'none';
+      }, 300);
+    });
+
+    // Mode Switcher
+    function setMode(mode) {
+      currentMode = mode;
+      if (mode === 'web') {
+        offlineApp.classList.remove('active');
+        iframe.style.display = 'block';
+        modeIcon.textContent = '🌐';
+        modeText.textContent = 'Orteil Web Edition';
+        toggleModeBtn.classList.add('active');
+      } else {
+        offlineApp.classList.add('active');
+        iframe.style.display = 'none';
+        mirrorLoader.style.display = 'none';
+        modeIcon.textContent = '⚡';
+        modeText.textContent = 'Offline Engine';
+        toggleModeBtn.classList.remove('active');
+      }
+    }
+
+    toggleModeBtn.addEventListener('click', () => {
+      setMode(currentMode === 'web' ? 'offline' : 'web');
+    });
+
+    switchOfflineDirect.addEventListener('click', () => {
+      setMode('offline');
+    });
+
+    reloadBtn.addEventListener('click', () => {
+      if (currentMode === 'web') {
+        mirrorLoader.style.display = 'flex';
+        mirrorLoader.style.opacity = '1';
+        iframe.src = iframe.src;
+      } else {
+        renderShop();
+        showToast('Engine reloaded');
+      }
+    });
+
+    // =========================================================================
+    // 2. SELF-CONTAINED OFFLINE COOKIE CLICKER ENGINE
+    // =========================================================================
+    let cookies = 0;
+    let totalCookiesBaked = 0;
+    let totalClicks = 0;
+    let soundEnabled = true;
+
+    // Frenzy state
+    let frenzyMultiplier = 1;
+    let frenzyTimeRemaining = 0;
+    let clickMultiplier = 1;
+    let clickFrenzyTime = 0;
+
+    // Audio synthesizer via Web Audio API
+    let audioCtx = null;
+    function playTone(freq, duration, type = 'sine') {
+      if (!soundEnabled) return;
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {}
+    }
+
+    function playClickCrunch() {
+      playTone(320 + Math.random() * 80, 0.08, 'triangle');
+    }
+    function playChime() {
+      playTone(587.33, 0.3, 'sine');
+      setTimeout(() => playTone(880, 0.4, 'sine'), 100);
+      setTimeout(() => playTone(1174.66, 0.5, 'sine'), 200);
+    }
+
+    // Format numbers
+    function formatNumber(num) {
+      if (num < 1000) return Math.floor(num).toLocaleString();
+      if (num < 1000000) return (num / 1000).toFixed(1) + ' thousand';
+      if (num < 1000000000) return (num / 1000000).toFixed(2) + ' million';
+      if (num < 1000000000000) return (num / 1000000000).toFixed(2) + ' billion';
+      if (num < 1000000000000000) return (num / 1000000000000).toFixed(3) + ' trillion';
+      return (num / 1000000000000000).toFixed(3) + ' quadrillion';
+    }
+
+    // Buildings definition (Authentic Orteil scaling & costs)
+    const BUILDINGS = [
+      { id: 'cursor', name: 'Cursor', baseCost: 15, cps: 0.1, count: 0, icon: '👆', desc: 'Autoclicks once every 10 seconds.' },
+      { id: 'grandma', name: 'Grandma', baseCost: 100, cps: 1, count: 0, icon: '👵', desc: 'A nice grandma to bake more cookies.' },
+      { id: 'farm', name: 'Farm', baseCost: 1100, cps: 8, count: 0, icon: '🌾', desc: 'Grows cookie plants from cookie seeds.' },
+      { id: 'mine', name: 'Mine', baseCost: 12000, cps: 47, count: 0, icon: '⛏️', desc: 'Mines out cookie dough and chocolate chips.' },
+      { id: 'factory', name: 'Factory', baseCost: 130000, cps: 260, count: 0, icon: '🏭', desc: 'Mass produces cookies on industrial lines.' },
+      { id: 'bank', name: 'Bank', baseCost: 1400000, cps: 1400, count: 0, icon: '🏦', desc: 'Generates cookies from interest.' },
+      { id: 'temple', name: 'Temple', baseCost: 20000000, cps: 7800, count: 0, icon: '🏛️', desc: 'Prays to the ancient Baker gods.' },
+      { id: 'wizard', name: 'Wizard Tower', baseCost: 330000000, cps: 44000, count: 0, icon: '🧙', desc: 'Summons cookies with dark arcane magic.' },
+      { id: 'shipment', name: 'Shipment', baseCost: 5100000000, cps: 260000, count: 0, icon: '🚀', desc: 'Imports cookies from the cookie planet.' },
+      { id: 'alchemy', name: 'Alchemy Lab', baseCost: 75000000000, cps: 1600000, count: 0, icon: '🧪', desc: 'Transmutes pure gold into cookies.' },
+      { id: 'timemachine', name: 'Time Machine', baseCost: 1000000000000, cps: 12345678, count: 0, icon: '⏳', desc: 'Retrieves cookies from the past before they were eaten.' },
+      { id: 'prism', name: 'Prism', baseCost: 21000000000000, cps: 71000000, count: 0, icon: '🌈', desc: 'Converts light itself directly into cookies.' }
+    ];
+
+    // Upgrades definition
+    const UPGRADES = [
+      { id: 'click1', name: 'Reinforced Index Finger', cost: 100, icon: '👆', purchased: false, req: 1, apply: () => clickMultiplier *= 2, desc: 'Clicking is twice as efficient.' },
+      { id: 'click2', name: 'Carpal Tunnel Prevention', cost: 500, icon: '🖐️', purchased: false, req: 10, apply: () => clickMultiplier *= 2, desc: 'Clicking is twice as efficient.' },
+      { id: 'grandma1', name: 'Forwards from Grandma', cost: 1000, icon: '👵', purchased: false, req: 1, apply: () => BUILDINGS[1].cps *= 2, desc: 'Grandmas are twice as efficient.' },
+      { id: 'grandma2', name: 'Steel-plated Rolling Pins', cost: 5000, icon: '🥖', purchased: false, req: 10, apply: () => BUILDINGS[1].cps *= 2, desc: 'Grandmas are twice as efficient.' },
+      { id: 'farm1', name: 'Cheap Hoes', cost: 11000, icon: '🌾', purchased: false, req: 1, apply: () => BUILDINGS[2].cps *= 2, desc: 'Farms are twice as efficient.' },
+      { id: 'mine1', name: 'Sugar Gas', cost: 120000, icon: '⛏️', purchased: false, req: 1, apply: () => BUILDINGS[3].cps *= 2, desc: 'Mines are twice as efficient.' },
+      { id: 'factory1', name: 'Sturdier Conveyor Belts', cost: 1300000, icon: '🏭', purchased: false, req: 1, apply: () => BUILDINGS[4].cps *= 2, desc: 'Factories are twice as efficient.' },
+      { id: 'lucky', name: 'Lucky Day', cost: 77777, icon: '🍀', purchased: false, req: 77, apply: () => goldenChance *= 2, desc: 'Golden cookies appear twice as often.' }
+    ];
+
+    let goldenChance = 0.003; // Chance per tick to spawn golden cookie
+
+    function getBuildingCost(b) {
+      return Math.floor(b.baseCost * Math.pow(1.15, b.count));
+    }
+
+    function calculateTotalCpS() {
+      let base = 0;
+      BUILDINGS.forEach(b => {
+        base += b.cps * b.count;
+      });
+      return base * frenzyMultiplier;
+    }
+
+    function calculateClickPower() {
+      // 1 + cursor bonus
+      let p = (1 + (BUILDINGS[0].count * 0.1)) * clickMultiplier;
+      if (clickFrenzyTime > 0) p *= 777;
+      return p;
+    }
+
+    // DOM Elements
+    const cookiesDisplay = document.getElementById('offline-cookies');
+    const cpsDisplay = document.getElementById('offline-cps');
+    const frenzyBanner = document.getElementById('offline-frenzy-banner');
+    const cookieBtn = document.getElementById('offline-cookie-btn');
+    const cookieStage = document.getElementById('cookie-stage');
+    const buildingsList = document.getElementById('buildings-list');
+    const upgradesTray = document.getElementById('upgrades-tray');
+    const totalBuildingsCount = document.getElementById('total-buildings-count');
+    const goldenCookieHolder = document.getElementById('golden-cookie-holder');
+    const toast = document.getElementById('toast');
+    const soundBtn = document.getElementById('sound-btn');
+    const saveBtn = document.getElementById('save-btn');
+    const resetBtn = document.getElementById('reset-btn');
+
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+
+    // Render buildings and upgrades
+    function renderShop() {
+      // 1. Upgrades
+      upgradesTray.innerHTML = '';
+      const availableUpgrades = UPGRADES.filter(u => !u.purchased);
+      availableUpgrades.forEach(u => {
+        const canAfford = cookies >= u.cost;
+        const btn = document.createElement('button');
+        btn.className = `upgrade-btn ${canAfford ? '' : 'disabled'}`;
+        btn.innerHTML = u.icon;
+        btn.title = `${u.name} (Cost: ${formatNumber(u.cost)})\n${u.desc}`;
+        btn.onclick = () => {
+          if (cookies >= u.cost) {
+            cookies -= u.cost;
+            u.purchased = true;
+            u.apply();
+            playChime();
+            showToast(`Purchased ${u.name}!`);
+            updateDisplays();
+            renderShop();
+          }
+        };
+        upgradesTray.appendChild(btn);
+      });
+
+      // 2. Buildings
+      buildingsList.innerHTML = '';
+      let totalCount = 0;
+      BUILDINGS.forEach(b => {
+        totalCount += b.count;
+        const cost = getBuildingCost(b);
+        const canAfford = cookies >= cost;
+
+        const card = document.createElement('div');
+        card.className = `building-card ${canAfford ? '' : 'disabled'}`;
+        card.onclick = () => {
+          if (cookies >= cost) {
+            cookies -= cost;
+            b.count++;
+            playTone(400 + b.count * 15, 0.1, 'sine');
+            updateDisplays();
+            renderShop();
+          }
+        };
+
+        card.innerHTML = `
+          <div class="building-info">
+            <span class="building-icon">${b.icon}</span>
+            <div class="building-meta">
+              <h4>${b.name}</h4>
+              <span>🍪 ${formatNumber(cost)}</span>
+            </div>
+          </div>
+          <div class="building-count">${b.count}</div>
+        `;
+        buildingsList.appendChild(card);
+      });
+
+      totalBuildingsCount.textContent = `${totalCount} items`;
+    }
+
+    function updateDisplays() {
+      cookiesDisplay.textContent = `${formatNumber(cookies)} cookies`;
+      const currentCps = calculateTotalCpS();
+      cpsDisplay.textContent = `per second: ${currentCps.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}`;
+
+      if (frenzyTimeRemaining > 0) {
+        frenzyBanner.style.display = 'inline-block';
+        frenzyBanner.textContent = `🔥 FRENZY! 7x CpS (${Math.ceil(frenzyTimeRemaining)}s)`;
+      } else if (clickFrenzyTime > 0) {
+        frenzyBanner.style.display = 'inline-block';
+        frenzyBanner.textContent = `⚡ CLICK FRENZY! 777x Clicks (${Math.ceil(clickFrenzyTime)}s)`;
+      } else {
+        frenzyBanner.style.display = 'none';
+      }
+    }
+
+    // Giant Cookie Click Handler
+    cookieBtn.addEventListener('click', (e) => {
+      const clickPower = calculateClickPower();
+      cookies += clickPower;
+      totalCookiesBaked += clickPower;
+      totalClicks++;
+      playClickCrunch();
+
+      // Floating number effect
+      const rect = cookieBtn.getBoundingClientRect();
+      const numEl = document.createElement('div');
+      numEl.className = 'click-number';
+      numEl.textContent = `+${clickPower >= 1000 ? formatNumber(clickPower) : Math.round(clickPower)}`;
+      
+      const x = e.clientX - rect.left + (Math.random() * 20 - 10);
+      const y = e.clientY - rect.top + (Math.random() * 20 - 10);
+      numEl.style.left = `${x}px`;
+      numEl.style.top = `${y}px`;
+      cookieStage.appendChild(numEl);
+
+      setTimeout(() => numEl.remove(), 900);
+      updateDisplays();
+
+      // Check affordability for shop cards styling
+      const cards = buildingsList.querySelectorAll('.building-card');
+      BUILDINGS.forEach((b, idx) => {
+        const cost = getBuildingCost(b);
+        if (cards[idx]) {
+          if (cookies >= cost) cards[idx].classList.remove('disabled');
+          else cards[idx].classList.add('disabled');
+        }
+      });
+    });
+
+    // Golden Cookie Spawner
+    function spawnGoldenCookie() {
+      if (goldenCookieHolder.children.length > 0) return;
+      const gc = document.createElement('div');
+      gc.className = 'golden-cookie';
+      gc.style.top = `${Math.random() * 70 + 15}%`;
+      gc.style.left = `${Math.random() * 70 + 15}%`;
+      playTone(880, 0.4, 'triangle');
+
+      gc.onclick = () => {
+        playChime();
+        gc.remove();
+        const rand = Math.random();
+        if (rand < 0.5) {
+          // Frenzy (x7 for 30s)
+          frenzyMultiplier = 7;
+          frenzyTimeRemaining = 30;
+          showToast('FRENZY! Cookie production x7 for 30 seconds!');
+        } else if (rand < 0.8) {
+          // Click Frenzy (x777 for 15s)
+          clickFrenzyTime = 15;
+          showToast('CLICK FRENZY! Clicking power x777 for 15 seconds!');
+        } else {
+          // Lucky: instant cookies
+          const bonus = Math.max(13, calculateTotalCpS() * 900 * 0.15);
+          cookies += bonus;
+          totalCookiesBaked += bonus;
+          showToast(`LUCKY! +${formatNumber(bonus)} cookies!`);
+        }
+        updateDisplays();
+      };
+
+      goldenCookieHolder.appendChild(gc);
+
+      // Despawn after 12 seconds
+      setTimeout(() => {
+        if (gc.parentNode) gc.remove();
+      }, 12000);
+    }
+
+    // Main Game Loop (10 ticks per second for smooth CpS)
+    setInterval(() => {
+      const cps = calculateTotalCpS();
+      cookies += cps / 10;
+      totalCookiesBaked += cps / 10;
+
+      // Frenzy timer
+      if (frenzyTimeRemaining > 0) {
+        frenzyTimeRemaining -= 0.1;
+        if (frenzyTimeRemaining <= 0) {
+          frenzyMultiplier = 1;
+        }
+      }
+      if (clickFrenzyTime > 0) {
+        clickFrenzyTime -= 0.1;
+      }
+
+      // Golden Cookie random roll
+      if (Math.random() < goldenChance / 10) {
+        spawnGoldenCookie();
+      }
+
+      updateDisplays();
+    }, 100);
+
+    // Save & Load
+    function saveGame() {
+      try {
+        const data = {
+          cookies,
+          totalCookiesBaked,
+          totalClicks,
+          buildings: BUILDINGS.map(b => ({ id: b.id, count: b.count })),
+          upgrades: UPGRADES.map(u => ({ id: u.id, purchased: u.purchased }))
+        };
+        localStorage.setItem('orteil_cookie_clicker_save', JSON.stringify(data));
+      } catch (e) {}
+    }
+
+    function loadGame() {
+      try {
+        const saved = localStorage.getItem('orteil_cookie_clicker_save');
+        if (saved) {
+          const data = JSON.parse(saved);
+          cookies = data.cookies || 0;
+          totalCookiesBaked = data.totalCookiesBaked || 0;
+          totalClicks = data.totalClicks || 0;
+          if (data.buildings) {
+            data.buildings.forEach(sb => {
+              const found = BUILDINGS.find(b => b.id === sb.id);
+              if (found) found.count = sb.count || 0;
+            });
+          }
+          if (data.upgrades) {
+            data.upgrades.forEach(su => {
+              const found = UPGRADES.find(u => u.id === su.id);
+              if (found && su.purchased) {
+                found.purchased = true;
+                found.apply();
+              }
+            });
+          }
+        }
+      } catch (e) {}
+    }
+
+    // Auto-save every 5 seconds
+    setInterval(saveGame, 5000);
+
+    // Controls
+    soundBtn.addEventListener('click', () => {
+      soundEnabled = !soundEnabled;
+      soundBtn.textContent = soundEnabled ? 'Sound: ON' : 'Sound: OFF';
+    });
+
+    saveBtn.addEventListener('click', () => {
+      saveGame();
+      showToast('Game saved!');
+    });
+
+    resetBtn.addEventListener('click', () => {
+      if (confirm('Reset your offline bakery progress?')) {
+        cookies = 0;
+        totalCookiesBaked = 0;
+        totalClicks = 0;
+        BUILDINGS.forEach(b => b.count = 0);
+        UPGRADES.forEach(u => u.purchased = false);
+        frenzyMultiplier = 1;
+        clickFrenzyTime = 0;
+        localStorage.removeItem('orteil_cookie_clicker_save');
+        updateDisplays();
+        renderShop();
+        showToast('Bakery reset.');
+      }
+    });
+
+    // Initialize offline engine
+    loadGame();
+    renderShop();
+    updateDisplays();
+  </script>
+</body>
+</html>

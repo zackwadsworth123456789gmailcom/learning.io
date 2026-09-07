@@ -3,10 +3,10 @@ export const DEFAULT_GAMES = [
     id: "cookie-clicker",
     title: "Cookie Clicker",
     category: "Arcade",
-    description: "Bake trillions of cookies in the legendary incremental clicker game! Click the giant golden cookie, hire grandmas, build factories, and unlock hundreds of sweet upgrades.",
+    description: "Bake trillions of cookies in Orteil's legendary incremental masterpiece (orteil.dashnet.org)! Click the giant golden cookie, hire grandmas, build factories, trigger Golden Cookie frenzies, and unlock sweet upgrades.",
     iframe: {
-      src: "https://script.google.com/macros/s/AKfycbxGM35J29NkO-2LYjxWj_cA9IUaaXypkUy-LqXyLRbGTz0R6lXmAEapz1STN1jlTIRavw/exec",
-      title: "Cookie Clicker",
+      src: "/games/cookie-clicker.html",
+      title: "Cookie Clicker by Orteil",
       width: "100%",
       height: "100%",
       frameBorder: "0",
@@ -16,10 +16,35 @@ export const DEFAULT_GAMES = [
     },
     themeColor: "#eab308",
     icon: "Flame",
-    controls: "Click or tap the giant cookie to bake & buy upgrades",
+    controls: "Click giant cookie • Buy Grandmas, Mines, Factories & Upgrades • Switch between Orteil Web & Offline mode in top bar",
     featured: true,
     rating: 5.0,
-    plays: 98400
+    plays: 128400
+  },
+  {
+    id: "slope",
+    title: "Slope Game",
+    category: "Action",
+    description: "The high-speed 3D geometric ball runner! Roll down endless neon slopes, dodge red obstacles, leap across sudden gaps, and test your lightning-fast reflexes as the speed ramps up.",
+    iframe: {
+      id: "iframehtml5",
+      src: "https://yoplay.io/slope.embed",
+      title: "Slope Game",
+      width: "100%",
+      height: "100%",
+      frameBorder: "0",
+      border: "0",
+      scrolling: "auto",
+      className: "iframe-default",
+      allow: "autoplay; fullscreen; gamepad",
+      allowFullScreen: true
+    },
+    themeColor: "#10b981",
+    icon: "Zap",
+    controls: "A/D or Left/Right Arrow keys to steer • Space to start",
+    featured: true,
+    rating: 4.9,
+    plays: 182400
   },
   {
     id: "dvd-logo",

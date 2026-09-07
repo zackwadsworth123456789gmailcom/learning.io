@@ -204,8 +204,9 @@ export const GamePlayer = ({
           sandbox={game.iframe.sandbox || undefined}
           allowFullScreen={game.iframe.allowFullScreen !== false}
           scrolling={game.iframe.scrolling || "auto"}
+          frameBorder={game.iframe.frameBorder || "0"}
           onLoad={() => setIsLoading(false)}
-          className="w-full h-full border-0 bg-transparent block"
+          className={`w-full h-full border-0 bg-transparent block ${game.iframe.className || 'iframe-default'}`}
         />
       </div>
 
