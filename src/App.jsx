@@ -32,11 +32,13 @@ export default function App() {
   const [isJsonModalOpen, setIsJsonModalOpen] = useState(false);
   const [isPanicActive, setIsPanicActive] = useState(false);
 
-  // Load from /games.json on mount
+  // Load from games.json on mount
   useEffect(() => {
     const fetchGamesJson = async () => {
       try {
-        const response = await fetch('/games.json');
+        const base = import.meta.env.BASE_URL || './';
+        const url = base.endsWith('/') ? `${base}games.json` : `${base}/games.json`;
+        const response = await fetch(url);
         if (response.ok) {
           const jsonGames = await response.json();
           // Merge with any custom games saved in localStorage

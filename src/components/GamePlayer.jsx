@@ -24,6 +24,22 @@ export const GamePlayer = ({
   const [isLoading, setIsLoading] = useState(true);
   const [copiedLink, setCopiedLink] = useState(false);
 
+  // Helper to resolve iframe src with Vite base path (supports GitHub Pages subpaths)
+  const resolveSrc = (src) => {
+    if (!src) return '';
+    if (src.startsWith('http://') || src.startsWith('https://') || src.startsWith('data:')) {
+      return src;
+    }
+    const base = import.meta.env.BASE_URL || './';
+    if (src.startsWith('/')) {
+      const cleanBase = base.endsWith('/') ? base : `${base}/`;
+      return `${cleanBase}${src.slice(1)}`;
+    }
+    return src;
+  };
+
+  const resolvedIframeSrc = resolveSrc(game.iframe.src);
+
   // Handle reload
   const handleReload = () => {
     setIsLoading(true);
@@ -65,7 +81,12 @@ export const GamePlayer = ({
   }, [onBack]);
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(window.location.origin + game.iframe.src);
+    try {
+      const fullUrl = new URL(resolvedIframeSrc, window.location.href).href;
+      navigator.clipboard.writeText(fullUrl);
+    } catch {
+      navigator.clipboard.writeText(resolvedIframeSrc);
+    }
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
   };
@@ -128,7 +149,7 @@ export const GamePlayer = ({
 
           <a
             id="player-open-tab-link"
-            href={game.iframe.src}
+            href={resolvedIframeSrc}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1.5 rounded border border-zinc-700 bg-zinc-800 px-2 py-1 text-xs font-mono text-zinc-300 hover:bg-zinc-750 hover:text-white transition-colors"
@@ -177,7 +198,7 @@ export const GamePlayer = ({
           key={iframeKey}
           ref={iframeRef}
           id="active-game-iframe"
-          src={game.iframe.src}
+          src={resolvedIframeSrc}
           title={game.iframe.title || game.title}
           allow={game.iframe.allow || 'autoplay; fullscreen; gamepad'}
           sandbox={game.iframe.sandbox || 'allow-scripts allow-same-origin allow-pointer-lock'}
@@ -202,7 +223,7 @@ export const GamePlayer = ({
               {/* JSON source info badge */}
               <div className="mt-3 flex items-center gap-2 text-xs text-zinc-500">
                 <span className="font-mono bg-zinc-950 px-2 py-0.5 rounded border border-zinc-800 text-[10px] text-indigo-400">
-                  iframe src: {game.iframe.src}
+                  iframe src: {resolvedIframeSrc}
                 </span>
                 <button
                   onClick={handleCopyLink}
