@@ -1,5 +1,5 @@
 import React from 'react';
-import { Gamepad2, Plus, FileCode, ShieldAlert, X, Code2 } from 'lucide-react';
+import { Gamepad2, Plus, FileCode, ShieldAlert, X, Code2, Sparkles } from 'lucide-react';
 
 export const Navbar = ({
   searchQuery,
@@ -7,6 +7,9 @@ export const Navbar = ({
   onOpenAddModal,
   onOpenJsonModal,
   onOpenTryItModal,
+  onOpenAiSearchModal,
+  onToggleAmongUs,
+  isAmongUsActive,
   onTriggerPanic,
   activeGameTitle,
   onBackToGrid,
@@ -44,7 +47,7 @@ export const Navbar = ({
 
         {/* Search bar */}
         <div className="flex-1 max-w-md hidden md:block">
-          <div className="relative">
+          <div className="relative flex items-center">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs font-mono select-none">
               /
             </span>
@@ -54,21 +57,45 @@ export const Navbar = ({
               placeholder="Search games, tags, or categories..."
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full rounded bg-zinc-800 border border-zinc-700 pl-8 pr-8 py-1.5 text-xs text-zinc-200 placeholder-zinc-500 transition-colors focus:border-indigo-500 focus:outline-none"
+              className="w-full rounded bg-zinc-800 border border-zinc-700 pl-8 pr-16 py-1.5 text-xs text-zinc-200 placeholder-zinc-500 transition-colors focus:border-indigo-500 focus:outline-none"
             />
-            {searchQuery && (
-              <button
-                onClick={() => onSearchChange('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-200 cursor-pointer"
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
-            )}
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+              {searchQuery ? (
+                <button
+                  onClick={() => onSearchChange('')}
+                  className="text-zinc-400 hover:text-zinc-200 p-0.5 cursor-pointer"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={onOpenAiSearchModal}
+                  className="flex items-center gap-1 text-[10px] font-mono text-purple-400 bg-purple-950/60 border border-purple-500/40 hover:bg-purple-900/60 px-1.5 py-0.5 rounded cursor-pointer"
+                  title="Search with AI"
+                >
+                  <Sparkles className="h-2.5 w-2.5" />
+                  <span>AI</span>
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Action controls */}
         <div className="flex items-center gap-2">
+          {/* AI Search Tab - placed right by JS TryIt */}
+          <button
+            id="open-ai-search-btn"
+            onClick={onOpenAiSearchModal}
+            className="inline-flex items-center gap-1.5 rounded bg-purple-950/60 border border-purple-500/50 hover:bg-purple-900/70 hover:border-purple-400 px-2.5 py-1 text-xs font-bold text-purple-300 transition-colors shadow-xs cursor-pointer group"
+            title="Open AI Semantic Search & Smart Recommendations"
+          >
+            <Sparkles className="h-3.5 w-3.5 text-purple-400 group-hover:animate-pulse" />
+            <span className="text-[11px] font-mono">AI Search</span>
+          </button>
+
+          {/* JS TryIt Tab */}
           <button
             id="open-tryit-editor-btn"
             onClick={onOpenTryItModal}
@@ -87,6 +114,24 @@ export const Navbar = ({
           >
             <FileCode className="h-3.5 w-3.5 text-indigo-400" />
             <span className="text-[11px] font-mono">games.json</span>
+          </button>
+
+          {/* Moving Among Us Button */}
+          <button
+            id="toggle-amongus-nav-btn"
+            onClick={onToggleAmongUs}
+            className={`inline-flex items-center gap-1.5 rounded border px-2.5 py-1 text-xs font-bold transition-all shadow-xs cursor-pointer ${
+              isAmongUsActive
+                ? 'bg-red-600 border-red-500 text-white shadow-red-950/50'
+                : 'bg-zinc-800 border-zinc-700 text-zinc-300 hover:bg-zinc-750 hover:text-white'
+            }`}
+            title="Toggle moving Among Us crewmates at bottom of screen"
+          >
+            <span className="text-xs">ඞ</span>
+            <span className="hidden sm:inline text-[11px] font-mono">Among Us</span>
+            {isAmongUsActive && (
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            )}
           </button>
 
           <button
@@ -120,7 +165,7 @@ export const Navbar = ({
 
       {/* Mobile search bar */}
       <div className="md:hidden border-t border-zinc-800 px-4 py-2 bg-zinc-900">
-        <div className="relative">
+        <div className="relative flex items-center">
           <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-500 text-xs font-mono">/</span>
           <input
             id="mobile-search-input"
@@ -128,16 +173,27 @@ export const Navbar = ({
             placeholder="Search games..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full rounded bg-zinc-800 border border-zinc-700 pl-7 pr-8 py-1.5 text-xs text-zinc-200 placeholder-zinc-500 focus:border-indigo-500 focus:outline-none"
+            className="w-full rounded bg-zinc-800 border border-zinc-700 pl-7 pr-16 py-1.5 text-xs text-zinc-200 placeholder-zinc-500 focus:border-indigo-500 focus:outline-none"
           />
-          {searchQuery && (
-            <button
-              onClick={() => onSearchChange('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 cursor-pointer"
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
-          )}
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+            {searchQuery ? (
+              <button
+                onClick={() => onSearchChange('')}
+                className="text-zinc-400 p-0.5 cursor-pointer"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={onOpenAiSearchModal}
+                className="flex items-center gap-1 text-[10px] font-mono text-purple-400 bg-purple-950/60 border border-purple-500/40 px-1.5 py-0.5 rounded cursor-pointer"
+              >
+                <Sparkles className="h-2.5 w-2.5" />
+                <span>AI</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </header>

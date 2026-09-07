@@ -7,6 +7,8 @@ import { GamePlayer } from './components/GamePlayer.jsx';
 import { AddGameModal } from './components/AddGameModal.jsx';
 import { JsonViewerModal } from './components/JsonViewerModal.jsx';
 import { JsTryItEditorModal } from './components/JsTryItEditorModal.jsx';
+import { AiSearchModal } from './components/AiSearchModal.jsx';
+import { AmongUsWalker } from './components/AmongUsWalker.jsx';
 import { PanicOverlay } from './components/PanicOverlay.jsx';
 import {
   Flame,
@@ -14,6 +16,7 @@ import {
   FileCode,
   RotateCcw,
   Code2,
+  Sparkles,
 } from 'lucide-react';
 
 export default function App() {
@@ -33,6 +36,8 @@ export default function App() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isJsonModalOpen, setIsJsonModalOpen] = useState(false);
   const [isTryItModalOpen, setIsTryItModalOpen] = useState(false);
+  const [isAiSearchModalOpen, setIsAiSearchModalOpen] = useState(false);
+  const [isAmongUsActive, setIsAmongUsActive] = useState(false);
   const [isPanicActive, setIsPanicActive] = useState(false);
 
   // Load from games.json on mount
@@ -147,6 +152,9 @@ export default function App() {
         onOpenAddModal={() => setIsAddModalOpen(true)}
         onOpenJsonModal={() => setIsJsonModalOpen(true)}
         onOpenTryItModal={() => setIsTryItModalOpen(true)}
+        onOpenAiSearchModal={() => setIsAiSearchModalOpen(true)}
+        onToggleAmongUs={() => setIsAmongUsActive((prev) => !prev)}
+        isAmongUsActive={isAmongUsActive}
         onTriggerPanic={() => setIsPanicActive(true)}
         activeGameTitle={activeGame?.title}
         onBackToGrid={() => setActiveGame(null)}
@@ -208,21 +216,61 @@ export default function App() {
 
           <div>
             <h3 className="text-[10px] font-black uppercase text-zinc-500 tracking-[0.2em] mb-2.5">
-              Dev Tools
+              Discovery & Tools
             </h3>
-            <button
-              id="sidebar-tryit-btn"
-              onClick={() => setIsTryItModalOpen(true)}
-              className="w-full flex items-center justify-between rounded bg-zinc-900 border border-zinc-800 hover:border-emerald-500/50 hover:bg-zinc-850 p-2 text-xs transition-colors cursor-pointer group"
-            >
-              <div className="flex items-center gap-2">
-                <Code2 className="h-3.5 w-3.5 text-emerald-400" />
-                <span className="text-[11px] font-mono text-zinc-200 group-hover:text-white">JS TryIt</span>
-              </div>
-              <span className="text-[9px] font-mono bg-emerald-500/20 text-emerald-300 px-1 py-0.5 rounded font-bold">
-                Run »
-              </span>
-            </button>
+            <div className="space-y-1.5">
+              <button
+                id="sidebar-ai-search-btn"
+                onClick={() => setIsAiSearchModalOpen(true)}
+                className="w-full flex items-center justify-between rounded bg-zinc-900 border border-zinc-800 hover:border-purple-500/50 hover:bg-zinc-850 p-2 text-xs transition-colors cursor-pointer group"
+              >
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-3.5 w-3.5 text-purple-400 group-hover:animate-pulse" />
+                  <span className="text-[11px] font-mono text-zinc-200 group-hover:text-white">AI Search</span>
+                </div>
+                <span className="text-[9px] font-mono bg-purple-500/20 text-purple-300 px-1 py-0.5 rounded font-bold">
+                  Gemini »
+                </span>
+              </button>
+
+              <button
+                id="sidebar-tryit-btn"
+                onClick={() => setIsTryItModalOpen(true)}
+                className="w-full flex items-center justify-between rounded bg-zinc-900 border border-zinc-800 hover:border-emerald-500/50 hover:bg-zinc-850 p-2 text-xs transition-colors cursor-pointer group"
+              >
+                <div className="flex items-center gap-2">
+                  <Code2 className="h-3.5 w-3.5 text-emerald-400" />
+                  <span className="text-[11px] font-mono text-zinc-200 group-hover:text-white">JS TryIt</span>
+                </div>
+                <span className="text-[9px] font-mono bg-emerald-500/20 text-emerald-300 px-1 py-0.5 rounded font-bold">
+                  Run »
+                </span>
+              </button>
+
+              <button
+                id="sidebar-amongus-btn"
+                onClick={() => setIsAmongUsActive((prev) => !prev)}
+                className={`w-full flex items-center justify-between rounded border p-2 text-xs transition-colors cursor-pointer group ${
+                  isAmongUsActive
+                    ? 'bg-red-950/40 border-red-500/60 text-red-300'
+                    : 'bg-zinc-900 border-zinc-800 hover:border-red-500/50 hover:bg-zinc-850 text-zinc-200'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-sm">ඞ</span>
+                  <span className="text-[11px] font-mono group-hover:text-white">Among Us</span>
+                </div>
+                <span
+                  className={`text-[9px] font-mono px-1 py-0.5 rounded font-bold ${
+                    isAmongUsActive
+                      ? 'bg-red-500/30 text-red-300 animate-pulse'
+                      : 'bg-zinc-800 text-zinc-400'
+                  }`}
+                >
+                  {isAmongUsActive ? 'Walking ●' : 'Walk »'}
+                </span>
+              </button>
+            </div>
           </div>
 
           {games.some((g) => g.isCustom) && (
@@ -368,6 +416,32 @@ export default function App() {
         onClose={() => setIsTryItModalOpen(false)}
       />
 
+      <AiSearchModal
+        isOpen={isAiSearchModalOpen}
+        onClose={() => setIsAiSearchModalOpen(false)}
+        games={games}
+        favorites={favorites}
+        onToggleFavorite={toggleFavorite}
+        onSelectGame={(game) => {
+          setActiveGame(game);
+          setIsAiSearchModalOpen(false);
+        }}
+        onOpenTryIt={() => {
+          setIsAiSearchModalOpen(false);
+          setIsTryItModalOpen(true);
+        }}
+        onOpenAddModal={() => {
+          setIsAiSearchModalOpen(false);
+          setIsAddModalOpen(true);
+        }}
+      />
+
+      {/* Moving Among Us Walker at the bottom of the screen */}
+      <AmongUsWalker
+        isActive={isAmongUsActive}
+        onClose={() => setIsAmongUsActive(false)}
+      />
+
       {/* High-Density Ticker Footer */}
       <footer className="flex flex-wrap items-center justify-between px-6 py-2 bg-zinc-900 border-t border-zinc-800 text-[10px] text-zinc-500 uppercase tracking-widest shrink-0 select-none">
         <div className="flex items-center gap-6">
@@ -377,6 +451,26 @@ export default function App() {
         </div>
 
         <div className="flex items-center gap-4">
+          <button
+            id="footer-amongus-btn"
+            onClick={() => setIsAmongUsActive((prev) => !prev)}
+            className={`transition-colors font-mono font-bold cursor-pointer flex items-center gap-1 ${
+              isAmongUsActive
+                ? 'text-red-400 hover:text-red-300 animate-pulse'
+                : 'text-zinc-400 hover:text-red-300'
+            }`}
+            title="Toggle moving Among Us at the bottom of the screen"
+          >
+            <span>ඞ</span>
+            <span>Among Us {isAmongUsActive ? '(Walking)' : ''}</span>
+          </button>
+          <button
+            onClick={() => setIsAiSearchModalOpen(true)}
+            className="text-purple-400 hover:text-purple-300 transition-colors font-mono font-bold cursor-pointer flex items-center gap-1"
+          >
+            <Sparkles className="h-3 w-3" />
+            <span>AI Search</span>
+          </button>
           <button
             onClick={() => setIsTryItModalOpen(true)}
             className="text-emerald-400 hover:text-emerald-300 transition-colors font-mono font-bold cursor-pointer flex items-center gap-1"
