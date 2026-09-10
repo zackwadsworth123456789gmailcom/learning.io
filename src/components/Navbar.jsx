@@ -72,11 +72,11 @@ export const Navbar = ({
                 <button
                   type="button"
                   onClick={onOpenAiSearchModal}
-                  className="flex items-center gap-1 text-[10px] font-mono text-purple-400 bg-purple-950/60 border border-purple-500/40 hover:bg-purple-900/60 px-1.5 py-0.5 rounded cursor-pointer"
-                  title="Ask AI to solve any question (no code)"
+                  className="flex items-center gap-1 text-[10px] font-mono text-[#10a37f] bg-[#10a37f]/15 border border-[#10a37f]/40 hover:bg-[#10a37f]/25 px-1.5 py-0.5 rounded cursor-pointer"
+                  title="Ask ChatGPT to solve any question (no code)"
                 >
-                  <Sparkles className="h-2.5 w-2.5" />
-                  <span>Ask AI</span>
+                  <Sparkles className="h-2.5 w-2.5 text-[#10a37f]" />
+                  <span>ChatGPT</span>
                 </button>
               )}
             </div>
@@ -85,15 +85,15 @@ export const Navbar = ({
 
         {/* Action controls */}
         <div className="flex items-center gap-2">
-          {/* Ask AI Tab - placed right by JS TryIt */}
+          {/* ChatGPT Tab - placed right by JS TryIt */}
           <button
             id="open-ai-search-btn"
             onClick={onOpenAiSearchModal}
-            className="inline-flex items-center gap-1.5 rounded bg-purple-950/60 border border-purple-500/50 hover:bg-purple-900/70 hover:border-purple-400 px-2.5 py-1 text-xs font-bold text-purple-300 transition-colors shadow-xs cursor-pointer group"
-            title="Ask AI to solve questions step-by-step without code"
+            className="inline-flex items-center gap-1.5 rounded bg-[#10a37f]/15 border border-[#10a37f]/50 hover:bg-[#10a37f]/25 hover:border-[#10a37f] px-2.5 py-1 text-xs font-bold text-emerald-300 transition-colors shadow-xs cursor-pointer group"
+            title="Ask ChatGPT to solve questions step-by-step without code"
           >
-            <Sparkles className="h-3.5 w-3.5 text-purple-400 group-hover:animate-pulse" />
-            <span className="text-[11px] font-mono">Ask AI</span>
+            <Sparkles className="h-3.5 w-3.5 text-[#10a37f] group-hover:rotate-12 transition-transform" />
+            <span className="text-[11px] font-mono">ChatGPT</span>
           </button>
 
           {/* JS TryIt Tab */}
@@ -205,10 +205,11 @@ export const Navbar = ({
               <button
                 type="button"
                 onClick={onOpenAiSearchModal}
-                className="flex items-center gap-1 text-[10px] font-mono text-purple-400 bg-purple-950/60 border border-purple-500/40 px-1.5 py-0.5 rounded cursor-pointer"
+                className="flex items-center gap-1 text-[10px] font-mono text-[#10a37f] bg-[#10a37f]/15 border border-[#10a37f]/40 px-1.5 py-0.5 rounded cursor-pointer"
+                title="Open ChatGPT"
               >
-                <Sparkles className="h-2.5 w-2.5" />
-                <span>AI</span>
+                <Sparkles className="h-2.5 w-2.5 text-[#10a37f]" />
+                <span>GPT</span>
               </button>
             )}
           </div>

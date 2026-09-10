@@ -273,15 +273,15 @@ export default function App() {
               <button
                 id="sidebar-ai-search-btn"
                 onClick={() => setIsAiSearchModalOpen(true)}
-                className="w-full flex items-center justify-between rounded bg-zinc-900 border border-zinc-800 hover:border-purple-500/50 hover:bg-zinc-850 p-2 text-xs transition-colors cursor-pointer group"
-                title="Ask AI to solve questions step-by-step (without code)"
+                className="w-full flex items-center justify-between rounded bg-zinc-900 border border-zinc-800 hover:border-[#10a37f]/60 hover:bg-zinc-850 p-2 text-xs transition-colors cursor-pointer group"
+                title="Ask ChatGPT to solve questions step-by-step (without code)"
               >
                 <div className="flex items-center gap-2">
-                  <Sparkles className="h-3.5 w-3.5 text-purple-400 group-hover:animate-pulse" />
-                  <span className="text-[11px] font-mono text-zinc-200 group-hover:text-white">Ask AI (Solver)</span>
+                  <Sparkles className="h-3.5 w-3.5 text-[#10a37f] group-hover:rotate-12 transition-transform" />
+                  <span className="text-[11px] font-mono text-zinc-200 group-hover:text-white">ChatGPT (Solver)</span>
                 </div>
-                <span className="text-[9px] font-mono bg-purple-500/20 text-purple-300 px-1 py-0.5 rounded font-bold">
-                  Gemini »
+                <span className="text-[9px] font-mono bg-[#10a37f]/20 text-emerald-300 px-1 py-0.5 rounded font-bold">
+                  GPT-4o »
                 </span>
               </button>
 
@@ -531,11 +531,11 @@ export default function App() {
           </button>
           <button
             onClick={() => setIsAiSearchModalOpen(true)}
-            className="text-purple-400 hover:text-purple-300 transition-colors font-mono font-bold cursor-pointer flex items-center gap-1"
-            title="Ask AI questions"
+            className="text-[#10a37f] hover:text-emerald-300 transition-colors font-mono font-bold cursor-pointer flex items-center gap-1"
+            title="Ask ChatGPT questions"
           >
-            <Sparkles className="h-3 w-3" />
-            <span>Ask AI</span>
+            <Sparkles className="h-3 w-3 text-[#10a37f]" />
+            <span>ChatGPT</span>
           </button>
           <button
             onClick={() => setIsTryItModalOpen(true)}
